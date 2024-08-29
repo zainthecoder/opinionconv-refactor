@@ -34,7 +34,6 @@ stop_words = set(stopwords.words('english'))
 from IPython.display import Image
 from IPython.core.display import HTML
 
-
 # # **LOAD AMAZON DATASETS:**
 
 ### load the data
@@ -46,16 +45,16 @@ def parse(path):
         return(data)
 
 
-
-path_metaData_cellPhones = './meta_Cell_Phones_and_Accessories.json.gz'
+print("Zain1")
+path_metaData_cellPhones = './meta_Cell_Phones_and_Accessories.jsonl.gz'
 data_metaData_cellPhones = parse(path_metaData_cellPhones)
 df_metaData_raw_cellPhones = pd.DataFrame.from_dict(data_metaData_cellPhones)
 df_metaData_raw_cellPhones.head(2)
 
 
-# ### **2. Reviews**
-
-path_review_cellPhones = './Cell_Phones_and_Accessories_5.json.gz'
+### **2. Reviews**
+print("Zain2")
+path_review_cellPhones = './Cell_Phones_and_Accessories.jsonl.gz'
 data_review_raw_cellPhones = parse(path_review_cellPhones)
 df_review_raw_cellPhones = pd.DataFrame.from_dict(data_review_raw_cellPhones)
 df_review_raw_cellPhones.head(3)
@@ -63,11 +62,11 @@ df_review_raw_cellPhones.head(3)
 
 # ### **3. Ratings**
 
-
+print("Zain3")
 cols = ["item", "user", "rating", "timestamp"]
 
-path_rating_cellPhones = './Cell_Phones_and_Accessories.csv'
-df_ratings_raw_cellPhones = pd.read_csv(path_rating_cellPhones, names = cols)
+path_rating_cellPhones = './Cell_Phones_and_Accessories.csv.gz'
+df_ratings_raw_cellPhones = pd.read_csv(path_rating_cellPhones, names = cols,  compression='gzip')
 
 df_ratings_raw_cellPhones['timestamp'] = pd.to_datetime(df_ratings_raw_cellPhones['timestamp'],unit='s')
 
@@ -1146,7 +1145,7 @@ def select_pairs_combination(all_pairs_combination, num_pairs):
 
 
 # ### Generate Dataset
-
+print("Zain Is here")
 dataset = {}
 num_pairs = 50
 for item_counter, item in enumerate(all_items_with_review):
