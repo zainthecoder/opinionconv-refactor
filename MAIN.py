@@ -48,7 +48,7 @@ def parse(path):
 print("Zain1")
 path_metaData_cellPhones = './meta_Cell_Phones_and_Accessories.jsonl.gz'
 data_metaData_cellPhones = parse(path_metaData_cellPhones)
-df_metaData_raw_cellPhones = pd.DataFrame.from_dict(data_metaData_cellPhones)
+df_metaData_raw_cellPahones = pd.DataFrame.from_dict(data_metaData_cellPhones)
 df_metaData_raw_cellPhones.head(2)
 
 
