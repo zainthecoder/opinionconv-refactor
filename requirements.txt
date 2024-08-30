@@ -1,0 +1,8 @@
+pandas
+numpy
+joblib
+textstat
+matplotlib
+spacy
+nltk
+IPython
