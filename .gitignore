@@ -3,3 +3,7 @@ vevn-python3.10/*
 Python-3.10.14/*
 *.gz
 *.xz
+.venv/*
+*.gz
+myenv/*
+.DS*
