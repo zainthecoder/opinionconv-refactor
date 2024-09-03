@@ -155,6 +155,7 @@ remove_asin = np.array(remove_asin).flatten()
 Cell_Phones_df_raw.drop(remove_indices, axis=0, inplace=True)
 
 
+
 # Replace wrong brands
 replace_brand_lists = [[['Unknown'], ['BlackBerry', 'Alcatel', 'LG', 'LG']],
                       [['AT&T'], ['ZTE', 'Huawei', 'ZTE', 'ZTE', 'ZTE', 'ZTE']],

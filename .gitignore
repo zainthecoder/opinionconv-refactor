@@ -1,0 +1,5 @@
+vevn-python3.10/*
+.venv/*
+Python-3.10.14/*
+*.gz
+*.xz
