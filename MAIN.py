@@ -53,34 +53,38 @@ def parse(path):
 
 path_metaData_cellPhones = './small_cellPhones_meta.jsonl'
 data_metaData_cellPhones = parse(path_metaData_cellPhones)
-df_metaData_raw_cellPahones = pd.DataFrame.from_dict(data_metaData_cellPhones)
-df_metaData_raw_cellPhones.head(2)
+df_metaData_raw_cellPhones = pd.DataFrame.from_dict(data_metaData_cellPhones)
 
 
 ### **2. Reviews**.
 path_review_cellPhones = './small_cellPhones_reviews.jsonl'
 data_review_raw_cellPhones = parse(path_review_cellPhones)
 df_review_raw_cellPhones = pd.DataFrame.from_dict(data_review_raw_cellPhones)
-df_review_raw_cellPhones.head(3)
 
 
 # ### **3. Ratings**
 cols = ["item", "user", "rating", "timestamp"]
 
 path_rating_cellPhones = './small_cellPhones_csv.jsonl'
-df_ratings_raw_cellPhones = pd.parse(path_rating_cellPhones)
+df_ratings_raw_cellPhones = parse(path_rating_cellPhones)
+df_ratings_raw_cellPhones=pd.DataFrame.from_dict(df_ratings_raw_cellPhones)
 
-df_ratings_raw_cellPhones['timestamp'] = pd.to_datetime(df_ratings_raw_cellPhones['timestamp'],unit='s')
-
-
-# # **DATA CLEANING:**
+df_ratings_raw_cellPhones['timestamp'] = pd.to_datetime(df_ratings_raw_cellPhones['timestamp'], unit='s', errors='coerce')
 
 
 # Filter items with less than 6 categories & Split column of lists into multiple columns
-df_metaData_raw_cellPhones_c1 = df_metaData_raw_cellPhones[df_metaData_raw_cellPhones.category.map(len) < 6 ]
-df_categories_cellPhones = pd.DataFrame(df_metaData_raw_cellPhones_c1['category'].values.tolist()).add_prefix('category_')
+df_metaData_raw_cellPhones_c1 = df_metaData_raw_cellPhones[df_metaData_raw_cellPhones.categories.map(len) < 6 ]
+df_categories_cellPhones = pd.DataFrame(df_metaData_raw_cellPhones_c1['categories'].values.tolist()).add_prefix('category_')
+
+import pprint
+
 
 df_metaData_concat_cellPhones = pd.concat([df_categories_cellPhones.reset_index(drop=True), df_metaData_raw_cellPhones_c1.reset_index(drop=True)], axis=1)
+
+print(df_metaData_concat_cellPhones['price'].dtype)
+
+df_metaData_concat_cellPhones['price'] = df_metaData_concat_cellPhones['price'].astype(str)
+
 
 # Remove items without price
 price_df_metaData_cellPhones = df_metaData_concat_cellPhones[df_metaData_concat_cellPhones.price != '']
@@ -90,8 +94,11 @@ price_df_metaData_cellPhones = price_df_metaData_cellPhones[price_df_metaData_ce
 price_df_metaData_cellPhones['price'] = price_df_metaData_cellPhones.price.str.replace('$', '').astype(float)
 
 # Remove duplicates
-subset = ['category_0', 'category_1', 'category_2', 'category_3', 'category_4', 'category', 'tech1', 'description', 'fit', 'title', 'also_buy', 'image',
-       'tech2', 'brand', 'feature', 'rank', 'also_view', 'details', 'main_cat', 'date', 'price']
+subset = ['category_0', 'category_1', 'category_2', 'category_3', 'main_category', 'title', 'average_rating', 'rating_number', 'features', 'description', 'price', 'images', 'videos', 'store', 'categories', 'details', 'parent_asin', 'bought_together', 'subtitle', 'author']
+       
+
+print(price_df_metaData_cellPhones.columns.tolist())
+
 
 df_metaData_cellPhones = price_df_metaData_cellPhones.loc[price_df_metaData_cellPhones.astype(str).drop_duplicates(subset=subset, keep='first', inplace=False).index]
 df_metaData_cellPhones.head(2)
