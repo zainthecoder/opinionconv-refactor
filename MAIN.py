@@ -95,30 +95,30 @@ price_df_metaData_cellPhones['price'] = price_df_metaData_cellPhones.price.str.r
 
 # Remove duplicates
 subset = ['category_0', 'category_1', 'category_2', 'category_3', 'main_category', 'title', 'average_rating', 'rating_number', 'features', 'description', 'price', 'images', 'videos', 'store', 'categories', 'details', 'parent_asin', 'bought_together', 'subtitle', 'author']
-       
 
-print(price_df_metaData_cellPhones.columns.tolist())
+
+print("zainnn")
 
 
 df_metaData_cellPhones = price_df_metaData_cellPhones.loc[price_df_metaData_cellPhones.astype(str).drop_duplicates(subset=subset, keep='first', inplace=False).index]
 df_metaData_cellPhones.head(2)
-
+print(df_metaData_cellPhones.columns.tolist())
 
 # Add rating
-df_ratings_cellPhones = df_ratings_raw_cellPhones.groupby(by="item").agg(num_ratings=('rating', 'count'), sum_ratings=('rating', 'sum'))
+df_ratings_cellPhones = df_ratings_raw_cellPhones.groupby(by="parent_asin").agg(num_ratings=('rating', 'count'), sum_ratings=('rating', 'sum'))
 df_ratings_cellPhones['avg_rating'] = df_ratings_cellPhones.sum_ratings / df_ratings_cellPhones.num_ratings
 df_ratings_cellPhones['asin'] = df_ratings_cellPhones.index
 df_ratings_cellPhones.head(3)
 
 
 # Merge df_metaData and df_ratings
-df_metaData_ratings_cellPhones = pd.merge(df_metaData_cellPhones, df_ratings_cellPhones, on='asin')
+df_metaData_ratings_cellPhones = pd.merge(df_metaData_cellPhones, df_ratings_cellPhones, on='parent_asin')
 df_metaData_ratings_cellPhones.head(2)
 
 
 # Filter the items which have "Cell Phones" in category_1 and the main_category == "Cell Phones & Accessories"
 Cell_Phones_df_raw = df_metaData_ratings_cellPhones[df_metaData_ratings_cellPhones.category_1 == 'Cell Phones']
-Cell_Phones_df_raw = Cell_Phones_df_raw[Cell_Phones_df_raw.main_cat == "Cell Phones & Accessories"]
+Cell_Phones_df_raw = Cell_Phones_df_raw[Cell_Phones_df_raw.main_category == "Cell Phones & Accessories"]
 
 # Useful Cols
 subset_cols = ['category_0', 'category_1', 'category_2', 'category_3', 'category_4', 'description', 'title', 'also_buy', 'image',
