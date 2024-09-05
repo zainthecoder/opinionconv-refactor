@@ -36,37 +36,39 @@ from IPython.core.display import HTML
 
 # # **LOAD AMAZON DATASETS:**
 
-### load the data
+# ### load the data
+# def parse(path):
+#     data = []
+#     with gzip.open(path) as f:
+#         for l in f:
+#             data.append(json.loads(l.strip()))
+#         return(data)
+
 def parse(path):
     data = []
-    with gzip.open(path) as f:
+    with open(path, 'r', encoding='utf-8') as f:  # Open the file normally in read mode
         for l in f:
-            data.append(json.loads(l.strip()))
-        return(data)
+            data.append(json.loads(l.strip()))  # Load each line as a JSON object
+    return data  # Return the list of JSON objects
 
-
-print("Zain1")
-path_metaData_cellPhones = './meta_Cell_Phones_and_Accessories.jsonl.gz'
+path_metaData_cellPhones = './small_cellPhones_meta.jsonl'
 data_metaData_cellPhones = parse(path_metaData_cellPhones)
 df_metaData_raw_cellPahones = pd.DataFrame.from_dict(data_metaData_cellPhones)
 df_metaData_raw_cellPhones.head(2)
 
 
-### **2. Reviews**
-print("Zain2")
-path_review_cellPhones = './Cell_Phones_and_Accessories.jsonl.gz'
+### **2. Reviews**.
+path_review_cellPhones = './small_cellPhones_reviews.jsonl'
 data_review_raw_cellPhones = parse(path_review_cellPhones)
 df_review_raw_cellPhones = pd.DataFrame.from_dict(data_review_raw_cellPhones)
 df_review_raw_cellPhones.head(3)
 
 
 # ### **3. Ratings**
-
-print("Zain3")
 cols = ["item", "user", "rating", "timestamp"]
 
-path_rating_cellPhones = './Cell_Phones_and_Accessories.csv.gz'
-df_ratings_raw_cellPhones = pd.read_csv(path_rating_cellPhones, names = cols,  compression='gzip')
+path_rating_cellPhones = './small_cellPhones_csv.jsonl'
+df_ratings_raw_cellPhones = pd.parse(path_rating_cellPhones)
 
 df_ratings_raw_cellPhones['timestamp'] = pd.to_datetime(df_ratings_raw_cellPhones['timestamp'],unit='s')
 
