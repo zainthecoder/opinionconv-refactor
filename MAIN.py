@@ -81,7 +81,6 @@ import pprint
 
 df_metaData_concat_cellPhones = pd.concat([df_categories_cellPhones.reset_index(drop=True), df_metaData_raw_cellPhones_c1.reset_index(drop=True)], axis=1)
 
-print(df_metaData_concat_cellPhones['price'].dtype)
 
 df_metaData_concat_cellPhones['price'] = df_metaData_concat_cellPhones['price'].astype(str)
 
@@ -97,23 +96,29 @@ price_df_metaData_cellPhones['price'] = price_df_metaData_cellPhones.price.str.r
 subset = ['category_0', 'category_1', 'category_2', 'category_3', 'main_category', 'title', 'average_rating', 'rating_number', 'features', 'description', 'price', 'images', 'videos', 'store', 'categories', 'details', 'parent_asin', 'bought_together', 'subtitle', 'author']
 
 
-print("zainnn")
-
-
 df_metaData_cellPhones = price_df_metaData_cellPhones.loc[price_df_metaData_cellPhones.astype(str).drop_duplicates(subset=subset, keep='first', inplace=False).index]
-df_metaData_cellPhones.head(2)
-print(df_metaData_cellPhones.columns.tolist())
 
 # Add rating
 df_ratings_cellPhones = df_ratings_raw_cellPhones.groupby(by="parent_asin").agg(num_ratings=('rating', 'count'), sum_ratings=('rating', 'sum'))
 df_ratings_cellPhones['avg_rating'] = df_ratings_cellPhones.sum_ratings / df_ratings_cellPhones.num_ratings
 df_ratings_cellPhones['asin'] = df_ratings_cellPhones.index
-df_ratings_cellPhones.head(3)
+print("df_ratings_cellPhones")
+print(df_ratings_cellPhones.head(3))
 
+#TODO Remove this
+df_ratings_cellPhones.loc[0,'asin'] = 'B013SK1JTY'
+df_ratings_cellPhones.loc[1,'asin'] = 'B07ZPSG8P5'
+df_ratings_cellPhones.loc[2,'asin'] = 'B00GKR3L12'
+
+print("df_metaData_cellPhones")
+print(df_metaData_cellPhones.head(3))
 
 # Merge df_metaData and df_ratings
-df_metaData_ratings_cellPhones = pd.merge(df_metaData_cellPhones, df_ratings_cellPhones, on='parent_asin')
-df_metaData_ratings_cellPhones.head(2)
+#TODO Add this statement again
+#df_metaData_ratings_cellPhones = pd.merge(df_metaData_cellPhones, df_ratings_cellPhones, on = 'asin')
+df_metaData_ratings_cellPhones = df_metaData_cellPhones.merge(df_ratings_cellPhones, left_on='parent_asin', right_on='asin')
+print("df_metaData_ratings_cellPhones")
+print(df_metaData_ratings_cellPhones.head(2))
 
 
 # Filter the items which have "Cell Phones" in category_1 and the main_category == "Cell Phones & Accessories"
@@ -121,14 +126,17 @@ Cell_Phones_df_raw = df_metaData_ratings_cellPhones[df_metaData_ratings_cellPhon
 Cell_Phones_df_raw = Cell_Phones_df_raw[Cell_Phones_df_raw.main_category == "Cell Phones & Accessories"]
 
 # Useful Cols
-subset_cols = ['category_0', 'category_1', 'category_2', 'category_3', 'category_4', 'description', 'title', 'also_buy', 'image',
- 'brand', 'feature', 'rank', 'also_view', 'details', 'main_cat', 'similar_item', 'date', 'price', 'num_ratings', 'avg_rating', 'asin']
+subset_cols = ['category_0', 'category_1', 'category_2', 'category_3', 'description', 'title', 'bought_together', 'images', 'features', 'details', 'main_category', 'price', 'num_ratings', 'avg_rating', 'asin']
+
+print("###ome")
+pprint.pprint(Cell_Phones_df_raw.columns.tolist())
 
 Cell_Phones_df_raw = Cell_Phones_df_raw[subset_cols]
 Cell_Phones_df_raw.reset_index(drop=True, inplace=True)
 
 # Merging 3 columns: description, feature & title
-all_features = Cell_Phones_df_raw[['description', 'feature', 'title']].values.tolist()
+all_features = Cell_Phones_df_raw[['description', 'features', 'title']].values.tolist()
+
 col_all_features = []
 for i in all_features:
     list_features = []
@@ -140,15 +148,15 @@ for i in all_features:
             else:
                 list_features.append(j)
     col_all_features.append(' ****** '.join(list_features))
-    
-Cell_Phones_df_raw["all_features"] = col_all_features
-Cell_Phones_df_raw.head(2)
+ 
+print("Cell_Phones_df_raw")    
+print(Cell_Phones_df_raw.head(2))
 
 
 # Remove some useless brands
-remove_brand_list = [Cell_Phones_df_raw[Cell_Phones_df_raw.brand == 'OtterBox'],
-                     Cell_Phones_df_raw[Cell_Phones_df_raw.brand == 'Saunders'],
-                     Cell_Phones_df_raw[Cell_Phones_df_raw.brand == 'F FORITO']]
+remove_brand_list = [Cell_Phones_df_raw[Cell_Phones_df_raw.details.Manufacturer == 'OtterBox'],
+                     Cell_Phones_df_raw[Cell_Phones_df_raw.details.Manufacturer == 'Saunders'],
+                     Cell_Phones_df_raw[Cell_Phones_df_raw.details.Manufacturer == 'F FORITO']]
 
 remove_indices = []
 remove_asin = []
