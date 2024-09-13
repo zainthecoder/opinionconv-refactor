@@ -3,3 +3,4 @@
 - export NLTK_DATA=/home/stud/abedinz1/localDisk/opinionconv-refactor
 - python -m nltk.downloader stopwords
 - python MAIN.py
+- python -W ignore MAIN.py
