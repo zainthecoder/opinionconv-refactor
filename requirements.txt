@@ -4,3 +4,4 @@ textstat
 matplotlib
 spacy
 nltk
+pyabsa
