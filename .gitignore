@@ -8,3 +8,6 @@ Python-3.10.14/*
 myenv/*
 .DS*
 sftp*
+myenv/
+*.pkl
+corpora/
