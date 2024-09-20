@@ -41,45 +41,23 @@ from datasets import load_dataset
 
 # # **LOAD AMAZON DATASETS:**
 
-print("1")
-# Load from Pickle if file exists, otherwise download dataset
-if os.path.exists("df_metaData_raw_cellPhones.pkl"):
-    df_metaData_raw_cellPhones = pd.read_pickle("df_metaData_raw_cellPhones.pkl")
-    print("2")
-else:
 
-    df_metaData_raw_cellPhones = load_dataset(
-        "McAuley-Lab/Amazon-Reviews-2023",
-        "raw_meta_Cell_Phones_and_Accessories",
-        split="full",
-        trust_remote_code=True,
-    )
+df_metaData_raw_cellPhones = load_dataset(
+    "McAuley-Lab/Amazon-Reviews-2023",
+    "raw_meta_Cell_Phones_and_Accessories",
+    split="full",
+    trust_remote_code=True,
+)
 
-    print("##")
-    print("df_metaData_raw_cellPhones")
-    print("##")
-    print("3")
-
-    pprint.pprint(df_metaData_raw_cellPhones[0:5])
-    df_metaData_raw_cellPhones = df_metaData_raw_cellPhones.to_pandas()
-    # Save as Pickle
-    df_metaData_raw_cellPhones.to_pickle("df_metaData_raw_cellPhones.pkl")
-
-# path_metaData_cellPhones = './meta_Cell_Phones_and_Accessories.jsonl.gz'
-# data_metaData_cellPhones = parse(path_metaData_cellPhones)
-# df_metaData_raw_cellPhones = pd.DataFrame.from_dict(data_metaData_cellPhones)
+print("##")
+print("df_metaData_raw_cellPhones")
+print("##")
+print("3")
+pprint.pprint(df_metaData_raw_cellPhones[0:5])
+df_metaData_raw_cellPhones = df_metaData_raw_cellPhones.to_pandas()
 
 
-# ### **2. Reviews**.
-# path_review_cellPhones = './Cell_Phones_and_Accessories.jsonl.gz'
-# data_review_raw_cellPhones = parse(path_review_cellPhones)
-# df_review_raw_cellPhones = pd.DataFrame.from_dict(data_review_raw_cellPhones)
-
-# print("4")
-# if os.path.exists("df_review_raw_cellPhones.pkl"):
-#     df_review_raw_cellPhones = pd.read_pickle("df_review_raw_cellPhones.pkl")
-#     print("5")
-# else:
+# Reviews
 
 
 df_review_raw_cellPhones = load_dataset(
@@ -94,39 +72,23 @@ print("##")
 print("1")
 # pprint.pprint(df_review_raw_cellPhones[0:2])
 df_review_raw_cellPhones = df_review_raw_cellPhones.to_pandas()
-df_review_raw_cellPhones.to_pickle("df_review_raw_cellPhones.pkl")
-
 
 
 # # ### **3. Ratings**
-# cols = ["item", "user", "rating", "timestamp"]
-
-# path_rating_cellPhones = './Cell_Phones_and_Accessories.csv.gz'
-# df_ratings_raw_cellPhones = parse(path_rating_cellPhones)
-# df_ratings_raw_cellPhones=pd.DataFrame.from_dict(df_ratings_raw_cellPhones)
 
 
-if os.path.exists("df_ratings_raw_cellPhones.pkl"):
-    df_ratings_raw_cellPhones = pd.read_pickle("df_ratings_raw_cellPhones.pkl")
-else:
+df_ratings_raw_cellPhones = load_dataset(
+    "McAuley-Lab/Amazon-Reviews-2023",
+    "5core_rating_only_Cell_Phones_and_Accessories",
+    split="full",
+    trust_remote_code=True,
+)
 
-
-    df_ratings_raw_cellPhones = load_dataset(
-        "McAuley-Lab/Amazon-Reviews-2023",
-        "5core_rating_only_Cell_Phones_and_Accessories",
-        split="full",
-        trust_remote_code=True,
-    )
-
-    print("##")
-    print("df_ratings_raw_cellPhones")
-    print("##")
-    # pprint.pprint(df_ratings_raw_cellPhones[0:2])
-    df_ratings_raw_cellPhones = df_ratings_raw_cellPhones.to_pandas()
-
-    df_ratings_raw_cellPhones.to_pickle("df_ratings_raw_cellPhones.pkl")
-
-
+print("##")
+print("df_ratings_raw_cellPhones")
+print("##")
+pprint.pprint(df_ratings_raw_cellPhones[0:2])
+df_ratings_raw_cellPhones = df_ratings_raw_cellPhones.to_pandas()
 
 
 df_ratings_raw_cellPhones["timestamp"] = pd.to_datetime(
@@ -142,6 +104,7 @@ df_categories_cellPhones = pd.DataFrame(
     df_metaData_raw_cellPhones_c1["categories"].values.tolist()
 ).add_prefix("category_")
 
+pprint.pprint(df_categories_cellPhones.head())
 
 df_metaData_concat_cellPhones = pd.concat(
     [
@@ -162,17 +125,22 @@ price_df_metaData_cellPhones = df_metaData_concat_cellPhones[
     df_metaData_concat_cellPhones.price != ""
 ]
 price_df_metaData_cellPhones = df_metaData_concat_cellPhones[
-    df_metaData_concat_cellPhones.price != 'None'
+    df_metaData_concat_cellPhones.price != "None"
 ]
 # Remove items with wrong extracted price
 price_df_metaData_cellPhones = price_df_metaData_cellPhones[
     price_df_metaData_cellPhones.price.str.len() < 9
 ]
 
-print(price_df_metaData_cellPhones[0:3]['price'])
+print(price_df_metaData_cellPhones[0:3]["price"])
 
 # Remove dollar ($) sign for sorting
-price_df_metaData_cellPhones['price'] = price_df_metaData_cellPhones.price.str.replace('$', '').astype(float)
+price_df_metaData_cellPhones["price"] = price_df_metaData_cellPhones["price"].replace(
+    "—", np.nan
+)
+price_df_metaData_cellPhones["price"] = price_df_metaData_cellPhones.price.str.replace(
+    "$", ""
+).astype(float)
 
 
 # Remove duplicates
@@ -208,27 +176,83 @@ df_metaData_cellPhones = price_df_metaData_cellPhones.loc[
 
 
 # # Add rating
-# df_ratings_cellPhones = df_ratings_raw_cellPhones.groupby(by="parent_asin").agg(num_ratings=('rating', 'count'), sum_ratings=('rating', 'sum'))
-# df_ratings_cellPhones['avg_rating'] = df_ratings_cellPhones.sum_ratings / df_ratings_cellPhones.num_ratings
-# df_ratings_cellPhones['asin'] = df_ratings_cellPhones.index
-# print("df_ratings_cellPhones")
-# print(df_ratings_cellPhones.head(3))
 
-# #TODO Remove this
-# df_ratings_cellPhones.loc[0,'asin'] = 'B013SK1JTY'
-# df_ratings_cellPhones.loc[1,'asin'] = 'B07ZPSG8P5'
-# df_ratings_cellPhones.loc[2,'asin'] = 'B00GKR3L12'
 
-# print("df_metaData_cellPhones")
-# print(df_metaData_cellPhones.head(3))
+# Assuming df_ratings_raw_cellPhones is your DataFrame
+df_ratings_raw_cellPhones['rating'] = df_ratings_raw_cellPhones['rating'].astype(float)
 
-# # Merge df_metaData and df_ratings
-# #TODO Add this statement again
-# #df_metaData_ratings_cellPhones = pd.merge(df_metaData_cellPhones, df_ratings_cellPhones, on = 'asin')
-# df_metaData_ratings_cellPhones = df_metaData_cellPhones.merge(df_ratings_cellPhones, left_on='parent_asin', right_on='asin')
-# print("df_metaData_ratings_cellPhones")
-# print(df_metaData_ratings_cellPhones.head(2))
+df_ratings_cellPhones = df_ratings_raw_cellPhones.groupby(by="parent_asin").agg(
+    num_ratings=("rating", "count"), sum_ratings=("rating", "sum")
+)
 
+import pprint
+pprint.pprint(df_ratings_cellPhones.head())
+
+df_ratings_cellPhones["avg_rating"] = (
+    df_ratings_cellPhones.sum_ratings / df_ratings_cellPhones.num_ratings
+)
+df_ratings_cellPhones["asin"] = df_ratings_cellPhones.index
+print("df_ratings_cellPhones")
+print(df_ratings_cellPhones.head(3))
+
+
+
+# Merge df_metaData and df_ratings
+df_metaData_ratings_cellPhones = pd.merge(df_metaData_cellPhones, df_ratings_cellPhones, on='parent_asin')
+df_metaData_ratings_cellPhones.head(20)
+
+
+
+# Filter the items which have "Cell Phones" in category_1 and the main_category == "Cell Phones & Accessories"
+Cell_Phones_df_raw = df_metaData_ratings_cellPhones[df_metaData_ratings_cellPhones.main_category == 'Cell Phones & Accessories']
+print("main category filter")
+pprint.pprint(Cell_Phones_df_raw.head())
+
+Cell_Phones_df_raw = Cell_Phones_df_raw[Cell_Phones_df_raw.category_0 == "Cell Phones & Accessories"]
+print("category 0 filter")
+pprint.pprint(Cell_Phones_df_raw.head())
+# Useful Cols
+subset_cols = ['category_0', 'category_1', 'category_2', 'category_3', 'description', 'title', 'bought_together', 'images', 'features', 'details', 'main_category', 'price', 'num_ratings', 'avg_rating', 'asin', 'parent_asin']
+
+Cell_Phones_df_raw = Cell_Phones_df_raw[subset_cols]
+Cell_Phones_df_raw.reset_index(drop=True, inplace=True)
+
+# Merging 3 columns: description, feature & title
+all_features = Cell_Phones_df_raw[['description', 'features', 'title']].values.tolist()
+col_all_features = []
+for i in all_features:
+    list_features = []
+    for j in i:
+        if j:
+            if type(j) == list:
+                for k in j:
+                    list_features.append(k)
+            else:
+                list_features.append(j)
+    col_all_features.append(' ****** '.join(list_features))
+    
+Cell_Phones_df_raw["all_features"] = col_all_features
+Cell_Phones_df_raw.head(4)
+
+
+# Remove some useless brands
+remove_brand_list = [Cell_Phones_df_raw[Cell_Phones_df_raw.details.brand == 'OtterBox'],
+                     Cell_Phones_df_raw[Cell_Phones_df_raw.details.brand == 'Saunders'],
+                     Cell_Phones_df_raw[Cell_Phones_df_raw.details.brand == 'F FORITO']]
+
+remove_indices = []
+remove_asin = []
+for i in remove_brand_list:
+    remove_df = i
+    remove_indices.append(list(remove_df.index.values))
+    remove_asin.append(list(remove_df.asin.values))
+    
+remove_indices = np.array(remove_indices).flatten()
+remove_asin = np.array(remove_asin).flatten()
+
+Cell_Phones_df_raw.drop(remove_indices, axis=0, inplace=True)
+print("after removing brands")
+pprint.pprint(Cell_Phones_df_raw.head())
 
 # # Filter the items which have "Cell Phones" in category_1 and the main_category == "Cell Phones & Accessories"
 # Cell_Phones_df_raw = df_metaData_ratings_cellPhones[df_metaData_ratings_cellPhones.category_0 == 'Cell Phones & Accessories']
