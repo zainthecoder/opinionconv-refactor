@@ -310,30 +310,39 @@ replace_brand_lists = [[['Unknown'], ['BlackBerry', 'Alcatel', 'LG', 'LG']],
 
 def replace_wrong_brands(replace_brand_lists, df):
     df = df.copy()
+    
     for replace_brand_list in replace_brand_lists:
         wrong_brand = replace_brand_list[0][0]
         correct_brands = replace_brand_list[1]
-        incorrect_df = df[df.brand == wrong_brand]   
+        
+        # Get rows where the brand is incorrect
+        incorrect_df = df[df.brand == wrong_brand]
+        incorrect_df_asin = incorrect_df.asin.values
+        
+        # Case 1: More than one correct brand
         if len(correct_brands) > 1:
-            incorrect_df_asin = incorrect_df.asin.values
+            # If there are more incorrect brands than correct ones, cycle through correct brands
+            correct_brands_extended = (correct_brands * ((len(incorrect_df_asin) // len(correct_brands)) + 1))[:len(incorrect_df_asin)]
+            
             for i in range(len(incorrect_df_asin)):
                 asin_ = incorrect_df_asin[i]
-                brand_ = correct_brands[i]
+                brand_ = correct_brands_extended[i]
                 index = df.query('asin == @asin_').index.values[0]
                 df.loc[index, 'brand'] = brand_
-
+        
+        # Case 2: Only one correct brand, apply it to all incorrect entries
         elif len(correct_brands) == 1:
             brand_ = correct_brands[0]
             indices = incorrect_df.index.values
-            for index in indices:
-                df.loc[index, 'brand'] = brand_
-    return(df)
+            df.loc[indices, 'brand'] = brand_
 
+    return df
+
+# Applying the function to your DataFrame
 Cell_Phones_df = replace_wrong_brands(replace_brand_lists=replace_brand_lists, df=Cell_Phones_df_raw)
 
-print("after removing bad brands")
-pprint.pprint(Cell_Phones_df)
-
+print("after replacing bad brands")
+pprint.pprint(Cell_Phones_df.head())
 
 # Adding numnber of reviews
 if not os.path.exists('./metaData_for_cellPhones.pkl'):
@@ -432,3 +441,63 @@ for k,v in list(all_combinations_dict.items())[63:70]:
     print(k,v)
     
 len(all_combinations_dict.keys())
+
+# Generate conversations for the preferences
+conversation_dict_part_1 = {}
+for k1,v1 in list(all_combinations_dict.items()):
+    conversation_dict_part_1["Conv_#" + str(k1)] = {}
+    Agent_1 = "Hello, May I help you?"
+    User_1 = "Hi, I would like to buy a Cell Phone"
+    conversation_dict_part_1[f"Conv_#" + str(k1)]['Agent_1'] = Agent_1
+    conversation_dict_part_1["Conv_#" + str(k1)]['User_1'] = User_1
+    counter = 1
+    for k2, v2 in list(v1.items()):
+        counter += 1
+        Agent = f"Any preference on {k2}?"
+        User = v2
+        conversation_dict_part_1["Conv_#" + str(k1)][f'Agent_{counter}'] = Agent
+        conversation_dict_part_1["Conv_#" + str(k1)][f'User_{counter}'] = User
+
+for k,v in list(conversation_dict_part_1.items())[50:55]:
+    print(k,v)
+
+def findWholeWord(w):
+    return (re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search)
+
+def rules_generator(preferences_dict, features):
+    rules = []
+    for k2, v2 in list(preferences_dict.items()):
+        if k2 != "brand" and v2 != "No":
+            rules.append(findWholeWord(str(v2))(features.lower()))
+    return(rules)
+
+
+if not os.path.exists("./retrieved_items_dict.json"):
+    # Retrieve items for the preferences
+    DF = Cell_Phones_df 
+    retrieved_items_dict = {}
+    for k1, v1 in list(all_combinations_dict.items()):
+        list_retrieved_items_final = []
+        rules = []
+        brand_value = v1['brand']
+        if brand_value == "No":
+            df_retrieved_items_brand = DF
+        else:
+            df_retrieved_items_brand = DF[DF.brand == brand_value]
+        zipped = list(zip(df_retrieved_items_brand.asin.values, df_retrieved_items_brand.all_features.values))
+        list_retrieved_items_final = []
+        for index, features in zipped:
+            if features:
+                rules = rules_generator(v1, features)
+                if all(rules):
+                    list_retrieved_items_final.append(index)
+
+        retrieved_items_dict[k1] = {}
+        retrieved_items_dict[k1]['preferences'] = v1
+        retrieved_items_dict[k1]['retrieved items'] = list_retrieved_items_final
+        
+    with open('./retrieved_items_dict.json', 'w') as f:
+        json.dump(retrieved_items_dict, f)
+
+for k, v in list(retrieved_items_dict.items())[55:65]:
+    print(k,v)
