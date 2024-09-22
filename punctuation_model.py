@@ -1,27 +1,35 @@
+import pandas as pd
 from deepmultilingualpunctuation import PunctuationModel
+
+# Load the CSV file containing the reviews
+csv_input_path = './reviews_for_cellPhones_df_cleaned.csv'  # Path to your input CSV file
+csv_output_path = './reviews_for_cellPhones_punctuated.csv'  # Path to save the output CSV file
+
+# Load the CSV into a DataFrame
+reviews_df = pd.read_csv(csv_input_path)
 
 # Initialize the punctuation model
 model = PunctuationModel()
 
-# Define file paths
-input_file_path = 'reviews_wholeReview.txt'  # Input file with unpunctuated reviews
-#output_file_path = 'reviews_punct.txt'       # Output file for punctuated reviews
-
-# Open the input and output files
-with open(input_file_path, 'r') as input_file, open(output_file_path, 'w') as output_file:
-    # Process each line (review) from the input file
-    for line_number, line in enumerate(input_file, start=1):
-        # Skip empty lines
-        if line.strip():
+# Ensure that the 'text' field exists
+if 'text' in reviews_df.columns:
+    # Process each review and punctuate the text
+    for idx, row in reviews_df.iterrows():
+        review_text = row['text']
+        if pd.notna(review_text) and review_text.strip():  # Check if the review text is not empty
             try:
-                # Restore punctuation for the current line
-                punctuated_line = model.restore_punctuation(line.strip())
-                # Write the punctuated line to the output file with a newline character
-                output_file.write(punctuated_line + '\n')
+                # Restore punctuation for the review
+                punctuated_text = model.restore_punctuation(review_text.strip())
+                # Replace the original text with the punctuated version in the DataFrame
+                reviews_df.at[idx, 'text'] = punctuated_text
             except Exception as e:
-                # Log the error and continue processing the next line
-                print(f"Error processing review on line {line_number}: {e}")
-                # Optionally write a placeholder or the original line to the output file in case of failure
-                output_file.write(line.strip() + '\n')
+                print(f"Error processing review at index {idx}: {e}")
+                # Optionally leave the original text if an error occurs
+                reviews_df.at[idx, 'text'] = review_text
+else:
+    print("Error: 'text' column not found in the input CSV.")
 
-print(f"Punctuated reviews have been saved to {output_file_path}")
+# Save the updated DataFrame to a new CSV file
+reviews_df.to_csv(csv_output_path, index=False)
+
+print(f"Punctuated reviews have been saved to {csv_output_path}")

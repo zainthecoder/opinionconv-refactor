@@ -414,12 +414,15 @@ else:
     print("reviews_wholeReview.txt mil gaya")
 
 brand_list = list(Cell_Phones_df.brand.unique())
+print("brand_list: ")
+pprint.pprint(brand_list)
 os_list = ['ios', 'android', 'windows', 'No']
 memory_list = ['2 GB', '4 GB', '8 GB', '16 GB', '32 GB', '64 GB', '128 GB', '256 GB', 'No']
 color_list = ['White', 'Silver', 'Black', 'Red', 'Gold', 'No']
 
 # Generate all possible combinations for the preferences
 all_c = list(itertools.product(brand_list, os_list, memory_list, color_list))
+
 all_combinations = []
 for i in all_c:
     if i[1] == "ios":
@@ -436,6 +439,7 @@ for i, j in enumerate(all_combinations):
     all_combinations_dict[str(i+1)]["os"] = j[1]
     all_combinations_dict[str(i+1)]["color"] = j[3]
     all_combinations_dict[str(i+1)]["memory"] = j[2]
+
 
 for k,v in list(all_combinations_dict.items())[63:70]:
     print(k,v)
@@ -458,6 +462,7 @@ for k1,v1 in list(all_combinations_dict.items()):
         conversation_dict_part_1["Conv_#" + str(k1)][f'Agent_{counter}'] = Agent
         conversation_dict_part_1["Conv_#" + str(k1)][f'User_{counter}'] = User
 
+
 for k,v in list(conversation_dict_part_1.items())[50:55]:
     print(k,v)
 
@@ -472,34 +477,55 @@ def rules_generator(preferences_dict, features):
     return(rules)
 
 
-if not os.path.exists("./retrieved_items_dict.json"):
-    # Retrieve items for the preferences
-    DF = Cell_Phones_df 
-    retrieved_items_dict = {}
-    for k1, v1 in list(all_combinations_dict.items()):
-        list_retrieved_items_final = []
-        rules = []
-        brand_value = v1['brand']
-        if brand_value == "No":
-            df_retrieved_items_brand = DF
-        else:
-            df_retrieved_items_brand = DF[DF.brand == brand_value]
-        zipped = list(zip(df_retrieved_items_brand.asin.values, df_retrieved_items_brand.all_features.values))
-        list_retrieved_items_final = []
-        for index, features in zipped:
-            if features:
-                rules = rules_generator(v1, features)
-                if all(rules):
-                    list_retrieved_items_final.append(index)
+retrieved_items_dict = {}
+# if not os.path.exists("./retrieved_items_dict.json"):
 
-        retrieved_items_dict[k1] = {}
-        retrieved_items_dict[k1]['preferences'] = v1
-        retrieved_items_dict[k1]['retrieved items'] = list_retrieved_items_final
-        
-    with open('./retrieved_items_dict.json', 'w') as f:
-        json.dump(retrieved_items_dict, f)
+# Retrieve items for the preferences
+DF = Cell_Phones_df 
+try:
+    print("DF")
+    pprint.pprint(DF)
+except:
+    print("Issue found")
+
+
+for k1, v1 in list(all_combinations_dict.items()):
+    print("k1: ",k1)
+    print("v1: ",v1)
+
+    list_retrieved_items_final = []
+    rules = []
+    brand_value = v1['brand']
+    if brand_value == "No":
+        df_retrieved_items_brand = DF
+    else:
+        df_retrieved_items_brand = DF[DF.brand == brand_value]
+    zipped = list(zip(df_retrieved_items_brand.asin.values, df_retrieved_items_brand.all_features.values))
+    list_retrieved_items_final = []
+    for index, features in zipped:
+        if features:
+            rules = rules_generator(v1, features)
+            if all(rules):
+                print("Index")
+                pprint.pprint(index)
+                list_retrieved_items_final.append(index)
+
+    retrieved_items_dict[k1] = {}
+    retrieved_items_dict[k1]['preferences'] = v1
+    retrieved_items_dict[k1]['retrieved items'] = list_retrieved_items_final
+    
+
+print("##")
+print("retrieved_items_dict")
+pprint.pprint(retrieved_items_dict)
+print("\n\n")
+
+with open('./retrieved_items_dict.json', 'w') as f:
+    json.dump(retrieved_items_dict, f)
+# else:
+#     print("mil gaya ./retrieved_items_dict.json")
 
 for k, v in list(retrieved_items_dict.items())[55:65]:
     print(k,v)
 
-    
+
