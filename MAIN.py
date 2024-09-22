@@ -501,3 +501,5 @@ if not os.path.exists("./retrieved_items_dict.json"):
 
 for k, v in list(retrieved_items_dict.items())[55:65]:
     print(k,v)
+
+    
