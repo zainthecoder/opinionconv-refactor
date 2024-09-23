@@ -3,7 +3,7 @@ from deepmultilingualpunctuation import PunctuationModel
 
 # Load the CSV file containing the reviews
 csv_input_path = './reviews_for_cellPhones_df_cleaned.csv'  # Path to your input CSV file
-csv_output_path = './reviews_for_cellPhones_punctuated.csv'  # Path to save the output CSV file
+csv_output_path = './final_reviews_for_cellPhones_punctuated.csv'  # Path to save the output CSV file
 
 # Load the CSV into a DataFrame
 reviews_df = pd.read_csv(csv_input_path)
