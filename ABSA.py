@@ -1,16 +1,18 @@
 import random
 import os
+import json
 from transformers import pipeline
 import pandas as pd
 import pprint
 from pyabsa import AspectTermExtraction as ATEPC, DeviceTypeOption
 import nltk
 from nltk.tokenize import sent_tokenize
+from tqdm import tqdm
 
 # Ensure NLTK punkt is downloaded
 nltk.download('punkt')
 
-OUTPUT_REVIEWS_PATH = "./reviews_after_absa.json"
+OUTPUT_REVIEWS_PATH = "./final_reviews_after_absa.json"
 
 def setup_aspect_extractor(language="english"):
     """Initialize the Aspect Term Extraction model with the specified language."""
@@ -35,21 +37,21 @@ def save_json(data, file_path):
 def perform_absa_and_save(data, output_path):
     """Perform ABSA on each sentence of each review and save the results."""
     filtered_reviews = []
-    for idx, entry in data.iterrows():
+    
+    # Use tqdm to show progress
+    for idx, entry in tqdm(data.iterrows(), total=len(data), desc="Processing reviews"):
         try:
             key = generate_key(entry["asin"], entry["user_id"])
 
-            review_text = entry[
-                "text"
-            ]  # Adjust the key based on your JSON structure
+            review_text = entry["text"]  # Adjust the key based on your JSON structure
             sentences = sent_tokenize(review_text)
+            
             for sentence in sentences:
                 absa_result = aspect_extractor.predict(sentence, print_result=False)
-                # print("@SENTENCE@")
-                # pprint.pprint(absa_result)
                 filtered_reviews.append(
                     {
-                        "text": sentence,
+                        "sentence": sentence,
+                        "text": review_text,
                         "aspect": absa_result.get("aspect"),
                         "sentiment": absa_result.get("sentiment"),
                         "asin": entry["asin"],
@@ -57,10 +59,9 @@ def perform_absa_and_save(data, output_path):
                     }
                 )
         except Exception as e:
-            print("Exception: ",e)
+            print("Exception: ", e)
             
     save_json(filtered_reviews, output_path)
-
 
 def main():
     # Load the CSV file
@@ -68,6 +69,7 @@ def main():
     reviews = pd.read_csv(csv_path)  # Load the CSV as a DataFrame
     #print("columns: ",reviews.head())
     #print(reviews)
+    #f = reviews[0:5]
     perform_absa_and_save(reviews, OUTPUT_REVIEWS_PATH)
 
 

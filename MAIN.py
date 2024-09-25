@@ -15,6 +15,7 @@ import pickle
 import logging
 import copy
 import textstat
+import pprint
 
 import matplotlib.pyplot as plt
 
@@ -56,12 +57,6 @@ df_metaData_raw_cellPhones = load_dataset(
     split="full",
     trust_remote_code=True,
 )
-
-print("##")
-print("df_metaData_raw_cellPhones")
-print("##")
-print("3")
-#pprint.pprint(df_metaData_raw_cellPhones[0])
 
 df_metaData_raw_cellPhones = df_metaData_raw_cellPhones.to_pandas()
 
@@ -179,7 +174,12 @@ df_metaData_cellPhones = price_df_metaData_cellPhones.loc[
 ]
 
 
-# # Add rating
+# print(df_metaData_cellPhones["main_category"].unique())
+# print(df_metaData_cellPhones["category_0"].unique())
+# print(df_metaData_cellPhones["category_1"].unique())
+# print(df_metaData_cellPhones["category_2"].unique())
+
+# Add rating
 
 
 # Assuming df_ratings_raw_cellPhones is your DataFrame
@@ -191,21 +191,18 @@ df_ratings_cellPhones = df_ratings_raw_cellPhones.groupby(by="parent_asin").agg(
     num_ratings=("rating", "count"), sum_ratings=("rating", "sum")
 )
 
-import pprint
-pprint.pprint(df_ratings_cellPhones.head())
-
 df_ratings_cellPhones["avg_rating"] = (
     df_ratings_cellPhones.sum_ratings / df_ratings_cellPhones.num_ratings
 )
 df_ratings_cellPhones["asin"] = df_ratings_cellPhones.index
 print("df_ratings_cellPhones")
-print(df_ratings_cellPhones.head(3))
+print(df_ratings_cellPhones.head())
 
 
 
 # Merge df_metaData and df_ratings
 df_metaData_ratings_cellPhones = pd.merge(df_metaData_cellPhones, df_ratings_cellPhones, on='parent_asin')
-df_metaData_ratings_cellPhones.head(20)
+df_metaData_ratings_cellPhones.head()
 
 
 
@@ -214,7 +211,7 @@ Cell_Phones_df_raw = df_metaData_ratings_cellPhones[df_metaData_ratings_cellPhon
 print("main category filter")
 pprint.pprint(Cell_Phones_df_raw.head())
 
-Cell_Phones_df_raw = Cell_Phones_df_raw[Cell_Phones_df_raw.category_0 == "Cell Phones & Accessories"]
+Cell_Phones_df_raw = Cell_Phones_df_raw[Cell_Phones_df_raw.category_1 == "Cell Phones"]
 print("category 0 filter")
 pprint.pprint(Cell_Phones_df_raw.head())
 # Useful Cols
@@ -344,6 +341,8 @@ Cell_Phones_df = replace_wrong_brands(replace_brand_lists=replace_brand_lists, d
 print("after replacing bad brands")
 pprint.pprint(Cell_Phones_df.head())
 
+
+
 # Adding numnber of reviews
 if not os.path.exists('./metaData_for_cellPhones.pkl'):
     reviews_for_cellPhones = df_review_raw_cellPhones.loc[df_review_raw_cellPhones['asin'].isin(Cell_Phones_df.asin.unique())]
@@ -388,7 +387,7 @@ def cleaning_process(text):
     return(cleaned_text)
 
 if not os.path.exists("./reviews_wholeReview.txt"):
-#@Vahid: Could we use the columns:Summary and Voting, somehow?
+    #@Vahid: Could we use the columns:Summary and Voting, somehow?
     reviews_for_cellPhones_df = df_review_raw_cellPhones.loc[df_review_raw_cellPhones['asin'].isin(Cell_Phones_df.asin.unique())]
     reviews_for_cellPhones_df = reviews_for_cellPhones_df.dropna(axis=0, subset=['text'])
 
@@ -409,7 +408,6 @@ if not os.path.exists("./reviews_wholeReview.txt"):
     with open("./reviews_wholeReview.txt", "w") as f:
         for review in cellPhone_reviews_cleaned.values:
             _ = f.write(review + '\n')
-
 else:
     print("reviews_wholeReview.txt mil gaya")
 
