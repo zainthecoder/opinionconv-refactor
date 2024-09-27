@@ -1,6 +1,7 @@
 #Installation
 - python -m spacy download en_core_web_trf
 - export NLTK_DATA=/home/stud/abedinz1/localDisk/opinionconv-refactor
+- export IPYTHONDIR=/home/stud/abedinz1/localDisk/opinionconv-refactor/.ipython
 - python -m nltk.downloader stopwords
 - python MAIN.py
 - python -W ignore MAIN.py
