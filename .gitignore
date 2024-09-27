@@ -13,3 +13,4 @@ myenv/
 corpora/
 *.csv
 check*
+tokeniz*
