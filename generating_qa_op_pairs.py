@@ -3,6 +3,8 @@ import json
 import pickle
 import re
 import random
+import ipdb
+import numpy as np
 
 metaData_for_cellPhones = pd.read_pickle("./metaData_for_cellPhones.pkl") #source: MAIN.py
 wrong_aspects_3 = pd.read_pickle('./wrong_aspects_3.pkl')
@@ -90,6 +92,37 @@ Oneg2B_list = ["Yes, it's true! This phone might be a good choice but you should
                "Yes, That's exactly what I know about it. However I should say something about the {} of this phone that "]
 
 
+similar_aspect_list = [['android', 'android os'],
+                       ['app', 'applications', 'apps', 'android apps'],
+                       ['battery', 'battery life', 'batteries'],
+                       ['build', 'build quality', 'built'],
+                       ['button', 'buttons'],
+                       ['camera', 'camera quality'],
+                       ['charge', 'charger', 'charges', 'charging'],
+                       ['color', 'colors'],
+                       ['cost', 'costs'],
+                       ['edge', 'edges'],
+                       ['feature', 'features'],
+                       ['front camera', 'front facing camera'],
+                       ['function', 'functionality', 'functions'],
+                       ['games', 'gaming'],
+                       ['internal memory', 'internal storage'],
+                       ['keyboard', 'keys'],
+                       ['memory', 'memory card'],
+                       ['operating system', 'os',],
+                       ['performance', 'performs'],
+                       ['power', 'power button'],
+                       ['price', 'price point', 'prices'],
+                       ['screen', 'screens'],
+                       ['micro sd card', 'microsd card', 'sd card', 'microsd slot'],
+                       ['set up', 'setup'],
+                       ['sim', 'sim card'],
+                       ['sound', 'sound quality'],
+                       ['speaker', 'speakerphone', 'speakers'],
+                       ['speed', 'speeds'],
+                       ['touch screen', 'touchscreen'],
+                       ['ui', 'user interface']]
+
 def aspects_similarity_check(aspect_1, aspect_2, similar_aspect_list):
     check=False
     for i in similar_aspect_list:
@@ -137,50 +170,48 @@ def cleaning_review(review):
 
 
 
-def Qpos1A_Apos1A(item, wrong_aspects, correct_forms, Q11_list, dict_AspectSentiment):
+def Qpos1A_Apos1A(item, wrong_aspects, correct_forms, Q1A_list, dict_AspectSentiment):
     blocks = {}
     counter = 0
     item_review_list = dict_AspectSentiment.get(item)
-    #print("yaar item_review_list: ",item_review_list)
     if item_review_list:
-        #print("hiba is here")
         for review_dict in item_review_list:
-            #print("zain is here")
-            for unique_id, review_sentiment in (review_dict.items()):
-                #print("unique_id: ",unique_id)
-                #print("review_sentiment: ",review_sentiment)
-                aspect = review_sentiment['aspect']
-                #aspect = cleaning_aspect(aspect)
+            for unique_id, review_sentiment in review_dict.items():
+                aspects = review_sentiment.get('aspect', [])  # Handle empty aspect list
+                sentiments = review_sentiment.get('sentiment', [])  # Handle empty sentiment list
                 review = review_sentiment['text']
-                #review = cleaning_review(review)
-                polarity = review_sentiment['sentiment'][0] if len(review_sentiment['sentiment']) else 'negative'
-                print("polarity: ",polarity)
-                if aspect not in wrong_aspects and aspect != None:
-                    if str(polarity).lower() == 'positive':
-                        counter += 1
-                        #aspect = cleaning_aspect(str(aspect))
-                        
-                        Qpos1A = random.choice(Q1A_list).format(aspect)
-                        Apos1A = review
-                        print("polarity inside:",polarity)
-                        blocks["Qpos1A_Apos1A_" + str(counter)] = {}
-                        blocks["Qpos1A_Apos1A_" + str(counter)]['Qpos1A'] = {}
-                        blocks["Qpos1A_Apos1A_" + str(counter)]['Qpos1A']['Question'] = Qpos1A
-                        blocks["Qpos1A_Apos1A_" + str(counter)]['Qpos1A']['Labels'] = {}
-                        blocks["Qpos1A_Apos1A_" + str(counter)]['Qpos1A']['Labels']['Key'] = unique_id
-                        blocks["Qpos1A_Apos1A_" + str(counter)]['Qpos1A']['Labels']['Aspect'] = aspect
-                        blocks["Qpos1A_Apos1A_" + str(counter)]['Qpos1A']['Labels']['Polarity'] = str(polarity).lower()
-                        
-                        blocks["Qpos1A_Apos1A_" + str(counter)]['Apos1A'] = {}
-                        blocks["Qpos1A_Apos1A_" + str(counter)]['Apos1A']['Answer'] = Apos1A
-                        blocks["Qpos1A_Apos1A_" + str(counter)]['Apos1A']['Labels'] = {}
-                        blocks["Qpos1A_Apos1A_" + str(counter)]['Apos1A']['Labels']['Key'] = unique_id
-                        blocks["Qpos1A_Apos1A_" + str(counter)]['Apos1A']['Labels']['Aspect'] = aspect
-                        blocks["Qpos1A_Apos1A_" + str(counter)]['Apos1A']['Labels']['Polarity'] = str(polarity).lower()
-                        print("yooo")
-                        #print("BLOCK")
-                        #print(blocks)
-    return(blocks)
+                review = cleaning_review(review)
+                
+                if aspects:  # Only process if aspects list is not empty
+                    for aspect, sentiment in zip(aspects, sentiments):
+                        polarity = sentiment
+                        aspect = cleaning_aspect(aspect)
+                        if aspect not in wrong_aspects and aspect is not None:
+                            if str(polarity).lower() == 'positive':
+                                counter += 1
+                                
+                                Qpos1A = random.choice(Q1A_list).format(aspect)
+                                Apos1A = review
+                                
+                                blocks[f"Qpos1A_Apos1A_{counter}"] = {
+                                    'Qpos1A': {
+                                        'Question': Qpos1A,
+                                        'Labels': {
+                                            'Key': unique_id,
+                                            'Aspect': aspect,
+                                            'Polarity': str(polarity).lower()
+                                        }
+                                    },
+                                    'Apos1A': {
+                                        'Answer': Apos1A,
+                                        'Labels': {
+                                            'Key': unique_id,
+                                            'Aspect': aspect,
+                                            'Polarity': str(polarity).lower()
+                                        }
+                                    }
+                                }
+    return blocks
 
 def Oneg1A_Opos1A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos1A_list, dict_AspectSentiment):
     blocks = {}
@@ -188,63 +219,82 @@ def Oneg1A_Opos1A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos1A_list, 
     similarity = 0
     aspect_review_polarity_key_list = []
     item_review_list = dict_AspectSentiment.get(item)
+    
     if item_review_list:
+        # First loop: collect positive aspects
         for review_dict in item_review_list:
-            for item_reviewer_aspect_key, review_sentiment in (review_dict.items()):
-                key = item_reviewer_aspect_key[0]
-                aspect = item_reviewer_aspect_key[1]
-                aspect = cleaning_aspect(aspect)
+            for item_reviewer_aspect_key, review_sentiment in review_dict.items():
+                key = item_reviewer_aspect_key
+                aspects = review_sentiment.get('aspect', [])  # Ensure aspects list is retrieved, default to empty
+                sentiments = review_sentiment.get('sentiment', [])  # Ensure sentiments list is retrieved, default to empty
                 review = review_sentiment['text']
                 review = cleaning_review(review)
-                polarity = review_sentiment['sentiment']
-                if aspect not in wrong_aspects and aspect != None:
-                    if str(polarity).lower() == 'positive':
-                        aspect_review_polarity_key_list.append((aspect, review, polarity, key))
+                
+                if aspects:  # Only process if aspects list is not empty
+                    for aspect, sentiment in zip(aspects, sentiments):
+                        aspect = cleaning_aspect(aspect)
+                        polarity = sentiment
+                        
+                        if aspect not in wrong_aspects and aspect is not None:
+                            if str(polarity).lower() == 'positive':
+                                aspect_review_polarity_key_list.append((aspect, review, polarity, key))
 
+        # Second loop: process negative aspects and match with positive ones
         for review_dict in item_review_list:
-            print(review_dict)
-            for item_reviewer_aspect_key, review_sentiment in (review_dict.items()):
-                key = item_reviewer_aspect_key[0]
-                aspect = item_reviewer_aspect_key[1]
+            for item_reviewer_aspect_key, review_sentiment in review_dict.items():
+                key = item_reviewer_aspect_key
+                aspects = review_sentiment.get('aspect', [])  # Ensure aspects list is retrieved, default to empty
+                sentiments = review_sentiment.get('sentiment', [])  # Ensure sentiments list is retrieved, default to empty
                 review = review_sentiment['text']
                 review = cleaning_review(review)
-                polarity = review_sentiment['sentiment']
-                if aspect != None and aspect not in wrong_aspects:
-                    if str(polarity).lower() == 'negative':
-                        sentence_aspect = review
-                        
-                        Oneg1A = random.choice(Oneg1A_list).format(aspect) + sentence_aspect
-                        
-                        for aspect_, review_, polarity_, key_ in aspect_review_polarity_key_list:
-                            aspect_ = cleaning_aspect(aspect_)
+                
+                if aspects:  # Only process if aspects list is not empty
+                    for aspect, sentiment in zip(aspects, sentiments):
+                        aspect = cleaning_aspect(aspect)
+                        polarity = sentiment
+
+                        if aspect is not None and aspect not in wrong_aspects:
+                            if str(polarity).lower() == 'negative':
+                                sentence_aspect = review
+                                Oneg1A = random.choice(Oneg1A_list).format(aspect) + sentence_aspect
                                 
-                            if str(polarity_).lower() == 'positive' and np.logical_or(str(aspect) == str(aspect_), aspects_similarity_check(aspect, aspect_, similar_aspect_list)):
-                                counter += 1
-                                sentence_aspect_ = review_
+                                # Match with positive aspects
+                                for aspect_, review_, polarity_, key_ in aspect_review_polarity_key_list:
+                                    aspect_ = cleaning_aspect(aspect_)
+                                    
+                                    if str(polarity_).lower() == 'positive' and np.logical_or(
+                                        str(aspect) == str(aspect_), aspects_similarity_check(aspect, aspect_, similar_aspect_list)
+                                    ):
+                                        counter += 1
+                                        sentence_aspect_ = review_
+                                        Opos1A = random.choice(Opos1A_list) + sentence_aspect_
 
-                                Opos1A = random.choice(Opos1A_list) + sentence_aspect_
-
-                                blocks["Oneg1A_Opos1A_" + str(counter)] = {}
-                                blocks["Oneg1A_Opos1A_" + str(counter)]['Oneg1A'] = {}
-                                blocks["Oneg1A_Opos1A_" + str(counter)]['Oneg1A']['Opinion'] = Oneg1A
-                                blocks["Oneg1A_Opos1A_" + str(counter)]['Oneg1A']['Labels'] = {}
-                                blocks["Oneg1A_Opos1A_" + str(counter)]['Oneg1A']['Labels']['Key'] = key
-                                blocks["Oneg1A_Opos1A_" + str(counter)]['Oneg1A']['Labels']['Aspect'] = aspect
-                                blocks["Oneg1A_Opos1A_" + str(counter)]['Oneg1A']['Labels']['Polarity'] = str(polarity).lower()
-
-                                blocks["Oneg1A_Opos1A_" + str(counter)]['Opos1A'] = {}
-                                blocks["Oneg1A_Opos1A_" + str(counter)]['Opos1A']['Opinion'] = Opos1A
-                                blocks["Oneg1A_Opos1A_" + str(counter)]['Opos1A']['Labels'] = {}
-                                blocks["Oneg1A_Opos1A_" + str(counter)]['Opos1A']['Labels']['Key'] = key_
-                                blocks["Oneg1A_Opos1A_" + str(counter)]['Opos1A']['Labels']['Aspect'] = aspect_
-                                blocks["Oneg1A_Opos1A_" + str(counter)]['Opos1A']['Labels']['Polarity'] = str(polarity_).lower()
-    return(blocks)
-
+                                        blocks[f"Oneg1A_Opos1A_{counter}"] = {
+                                            'Oneg1A': {
+                                                'Opinion': Oneg1A,
+                                                'Labels': {
+                                                    'Key': key,
+                                                    'Aspect': aspect,
+                                                    'Polarity': str(polarity).lower()
+                                                }
+                                            },
+                                            'Opos1A': {
+                                                'Opinion': Opos1A,
+                                                'Labels': {
+                                                    'Key': key_,
+                                                    'Aspect': aspect_,
+                                                    'Polarity': str(polarity_).lower()
+                                                }
+                                            }
+                                        }
+    return blocks
 def Oneg1A_Opos1B(item, retrieved_items, wrong_aspects, correct_forms, Oneg1A_list, Opos1B_list, dict_AspectSentiment, DF, retrieved=True, also_view=False):
     blocks = {}
     counter = 0
     similarity = 0
     item_1 = item
+    
+    # Determine other items based on `retrieved` or `also_view`
     if retrieved:
         other_items_list = [i for i in retrieved_items if i != item_1]
     elif also_view:
@@ -252,6 +302,8 @@ def Oneg1A_Opos1B(item, retrieved_items, wrong_aspects, correct_forms, Oneg1A_li
             other_items_list = DF.query("asin == @item_1").bought_together.values[0]
         else:
             other_items_list = None
+    
+    # Process other items' reviews
     if other_items_list:
         aspect_review_polarity_key_lists = []
         for item_2 in other_items_list:
@@ -259,107 +311,147 @@ def Oneg1A_Opos1B(item, retrieved_items, wrong_aspects, correct_forms, Oneg1A_li
             if item_2_review_list:
                 aspect_review_polarity_key_list = []
                 for item_2_review_dict in item_2_review_list:
-                    for item_2_reviewer_aspect_key, item_2_review_sentiment in (item_2_review_dict.items()):
-                        item_2_key = item_2_reviewer_aspect_key[0]
-                        item_2_aspect = item_2_reviewer_aspect_key[1]
-                        item_2_aspect = cleaning_aspect(item_2_aspect)
-                        item_2_review = item_2_review_sentiment['text']
-                        item_2_review = cleaning_review(item_2_review)
-                        item_2_polarity = item_2_review_sentiment['sentiment']
-                        if item_2_aspect not in wrong_aspects and item_2_aspect != None:
-                            if str(item_2_polarity).lower() == 'positive':
-                                aspect_review_polarity_key_list.append((item_2, item_2_aspect, item_2_review, item_2_polarity, item_2_key))
-
+                    for item_2_reviewer_aspect_key, item_2_review_sentiment in item_2_review_dict.items():
+                        item_2_key = item_2_reviewer_aspect_key
+                        aspects = item_2_review_sentiment.get('aspect', [])  # Handle empty aspect list
+                        sentiments = item_2_review_sentiment.get('sentiment', [])  # Handle empty sentiment list
+                        item_2_review = cleaning_review(item_2_review_sentiment['text'])
+                        
+                        if aspects:
+                            for aspect, sentiment in zip(aspects, sentiments):
+                                aspect = cleaning_aspect(aspect)
+                                polarity = sentiment
+                                if aspect not in wrong_aspects and aspect is not None and str(polarity).lower() == 'positive':
+                                    aspect_review_polarity_key_list.append((item_2, aspect, item_2_review, polarity, item_2_key))
+                
                 aspect_review_polarity_key_lists.append(aspect_review_polarity_key_list)
 
-
+        # Process reviews for item_1
         item_1_review_list = dict_AspectSentiment.get(item_1)
         if item_1_review_list:
             for item_1_review_dict in item_1_review_list:
-                for item_1_reviewer_aspect_key, item_1_review_sentiment in (item_1_review_dict.items()):
-                    item_1_key = item_1_reviewer_aspect_key[0]
-                    item_1_aspect = item_1_reviewer_aspect_key[1]
-                    item_1_aspect = cleaning_aspect(item_1_aspect)
-                    item_1_review = item_1_review_sentiment['text']
-                    item_1_review = cleaning_review(item_1_review)
-                    item_1_polarity = item_1_review_sentiment['sentiment']
-                    if item_1_aspect != None and item_1_aspect not in wrong_aspects:
-                        if str(item_1_polarity).lower() == 'negative':
-                            Oneg1A = random.choice(Oneg1A_list).format(item_1_aspect) + item_1_review
+                for item_1_reviewer_aspect_key, item_1_review_sentiment in item_1_review_dict.items():
+                    item_1_key = item_1_reviewer_aspect_key
+                    aspects = item_1_review_sentiment.get('aspect', [])  # Handle empty aspect list
+                    sentiments = item_1_review_sentiment.get('sentiment', [])  # Handle empty sentiment list
+                    item_1_review = cleaning_review(item_1_review_sentiment['text'])
+                    
+                    if aspects:
+                        for aspect, sentiment in zip(aspects, sentiments):
+                            aspect = cleaning_aspect(aspect)
+                            polarity = sentiment
 
-                            for item_aspect_review_polarity_key in aspect_review_polarity_key_lists:
-                                for item_, aspect_, review_, polarity_, key_ in item_aspect_review_polarity_key:
-                                    aspect_ = cleaning_aspect(aspect_)
+                            if aspect is not None and aspect not in wrong_aspects and str(polarity).lower() == 'negative':
+                                Oneg1A = random.choice(Oneg1A_list).format(aspect) + item_1_review
 
-                                    if str(polarity_).lower() == 'positive' and np.logical_or(str(item_1_aspect) == str(aspect_), aspects_similarity_check(item_1_aspect, aspect_, similar_aspect_list)):
-                                        counter += 1
-                                        
-                                        
-                                        Opos1B = random.choice(Opos1B_list).format(item_1_aspect, item_) + review_
-                                        #For MultiWOZ
-                                        #Opos1B = random.choice(Opos1B_list).format(item_1_aspect) + review_
+                                # Find matching positive aspects from other items
+                                for item_aspect_review_polarity_key in aspect_review_polarity_key_lists:
+                                    for item_, aspect_, review_, polarity_, key_ in item_aspect_review_polarity_key:
+                                        aspect_ = cleaning_aspect(aspect_)
 
-                                        blocks["Oneg1A_Opos1B_" + str(counter)] = {}
-                                        blocks["Oneg1A_Opos1B_" + str(counter)]['Oneg1A'] = {}
-                                        blocks["Oneg1A_Opos1B_" + str(counter)]['Oneg1A']['Opinion'] = Oneg1A
-                                        blocks["Oneg1A_Opos1B_" + str(counter)]['Oneg1A']['Labels'] = {}
-                                        blocks["Oneg1A_Opos1B_" + str(counter)]['Oneg1A']['Labels']['Key'] = item_1_key
-                                        blocks["Oneg1A_Opos1B_" + str(counter)]['Oneg1A']['Labels']['Aspect'] = item_1_aspect
-                                        blocks["Oneg1A_Opos1B_" + str(counter)]['Oneg1A']['Labels']['Polarity'] = str(item_1_polarity).lower()
+                                        if str(polarity_).lower() == 'positive' and np.logical_or(
+                                            str(aspect) == str(aspect_), aspects_similarity_check(aspect, aspect_, similar_aspect_list)
+                                        ):
+                                            counter += 1
+                                            
+                                            Opos1B = random.choice(Opos1B_list).format(aspect, item_) + review_
 
-                                        blocks["Oneg1A_Opos1B_" + str(counter)]['Opos1B'] = {}
-                                        blocks["Oneg1A_Opos1B_" + str(counter)]['Opos1B']['Opinion'] = Opos1B
-                                        blocks["Oneg1A_Opos1B_" + str(counter)]['Opos1B']['Labels'] = {}
-                                        blocks["Oneg1A_Opos1B_" + str(counter)]['Opos1B']['Labels']['Key'] = key_
-                                        blocks["Oneg1A_Opos1B_" + str(counter)]['Opos1B']['Labels']['Aspect'] = aspect_
-                                        blocks["Oneg1A_Opos1B_" + str(counter)]['Opos1B']['Labels']['Polarity'] = str(polarity_).lower()
-                                    
-    return(blocks)
+                                            blocks[f"Oneg1A_Opos1B_{counter}"] = {
+                                                'Oneg1A': {
+                                                    'Opinion': Oneg1A,
+                                                    'Labels': {
+                                                        'Key': item_1_key,
+                                                        'Aspect': aspect,
+                                                        'Polarity': str(polarity).lower()
+                                                    }
+                                                },
+                                                'Opos1B': {
+                                                    'Opinion': Opos1B,
+                                                    'Labels': {
+                                                        'Key': key_,
+                                                        'Aspect': aspect_,
+                                                        'Polarity': str(polarity_).lower()
+                                                    }
+                                                }
+                                            }
+    return blocks
+
 
 def Oneg1A_Opos2A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos2A_list, dict_AspectSentiment, restricted_version=True):
     blocks = {}
     counter = 0
-    similarity = 0
     aspect_review_polarity_key_list = []
     item_review_list = dict_AspectSentiment.get(item)
+    
     if item_review_list:
+        # Collect all positive reviews for aspects in `aspect_review_polarity_key_list`
         for review_dict in item_review_list:
-            for item_reviewer_aspect_key, review_sentiment in (review_dict.items()):
-                key = item_reviewer_aspect_key[0]
-                aspect = item_reviewer_aspect_key[1]
-                aspect = cleaning_aspect(aspect)
-                review = review_sentiment['text']
-                review = cleaning_review(review)
-                polarity = review_sentiment['sentiment']
-                if aspect not in wrong_aspects and aspect != None:
-                    if str(polarity).lower() == 'positive':
-                        aspect_review_polarity_key_list.append((aspect, review, polarity, key))
+            for item_reviewer_aspect_key, review_sentiment in review_dict.items():
+                key = item_reviewer_aspect_key
+                aspects = review_sentiment.get('aspect', [])  # Handle empty aspect list
+                sentiments = review_sentiment.get('sentiment', [])  # Handle empty sentiment list
+                review = cleaning_review(review_sentiment['text'])
 
+                if aspects:
+                    for aspect, polarity in zip(aspects, sentiments):
+                        aspect = cleaning_aspect(aspect)
+                        polarity = polarity
+                        if aspect not in wrong_aspects and aspect is not None and str(polarity).lower() == 'positive':
+                            aspect_review_polarity_key_list.append((aspect, review, polarity, key))
+
+        # Process negative aspects and generate Oneg1A and Opos2A blocks
         for review_dict in item_review_list:
-            for item_reviewer_aspect_key, review_sentiment in (review_dict.items()):
-                key = item_reviewer_aspect_key[0]
-                aspect = item_reviewer_aspect_key[1]
-                aspect = cleaning_aspect(aspect)
-                review = review_sentiment['text']
-                review = cleaning_review(review)
-                polarity = review_sentiment['sentiment']
-                if aspect != None and aspect not in wrong_aspects:
-                    if str(polarity).lower() == 'negative':
-                        
-                        Oneg1A = random.choice(Oneg1A_list).format(aspect) + review
-                        
-                        check = False 
-                        # We disagree with the user only when there is a positive review for the aspect, mentioned by user
-                        if restricted_version == True:
-                            for aspect_, review_, polarity_, key_ in aspect_review_polarity_key_list:
-                                if check == False:
+            for item_reviewer_aspect_key, review_sentiment in review_dict.items():
+                key = item_reviewer_aspect_key
+                aspects = review_sentiment.get('aspect', [])  # Handle empty aspect list
+                sentiments = review_sentiment.get('sentiment', [])  # Handle empty sentiment list
+                review = cleaning_review(review_sentiment['text'])
+
+                if aspects:
+                    for aspect, polarity in zip(aspects, sentiments):
+                        aspect = cleaning_aspect(aspect)
+                        polarity = polarity
+                        if aspect is not None and aspect not in wrong_aspects and str(polarity).lower() == 'negative':
+                            Oneg1A = random.choice(Oneg1A_list).format(aspect) + review
+
+                            check = False  # To ensure restricted version logic works
+                            # In restricted version, we respond only if there's a positive review for the aspect
+                            if restricted_version:
+                                for aspect_, review_, polarity_, key_ in aspect_review_polarity_key_list:
                                     aspect_ = cleaning_aspect(aspect_)
-
-                                    if str(polarity_).lower() == 'positive' and np.logical_or(str(aspect) == str(aspect_), aspects_similarity_check(aspect, aspect_, similar_aspect_list)):
+                                    if str(polarity_).lower() == 'positive' and np.logical_or(
+                                            str(aspect) == str(aspect_), aspects_similarity_check(aspect, aspect_, similar_aspect_list)):
                                         check = True
                                         break
-                            
-                            if check == True:
+
+                                if check:
+                                    for aspect_, review_, polarity_, key_ in aspect_review_polarity_key_list:
+                                        aspect_ = cleaning_aspect(aspect_)
+                                        if str(polarity_).lower() == 'positive':
+                                            counter += 1
+
+                                            Opos2A = random.choice(Opos2A_list).format(aspect, aspect_) + review_
+
+                                            blocks[f"Oneg1A_Opos2A_{counter}"] = {
+                                                'Oneg1A': {
+                                                    'Opinion': Oneg1A,
+                                                    'Labels': {
+                                                        'Key': key,
+                                                        'Aspect': aspect,
+                                                        'Polarity': str(polarity).lower()
+                                                    }
+                                                },
+                                                'Opos2A': {
+                                                    'Opinion': Opos2A,
+                                                    'Labels': {
+                                                        'Key': key_,
+                                                        'Aspect': aspect_,
+                                                        'Polarity': str(polarity_).lower()
+                                                    }
+                                                }
+                                            }
+                            else:
+                                # If restricted_version is False, we don't check for agreement
                                 for aspect_, review_, polarity_, key_ in aspect_review_polarity_key_list:
                                     aspect_ = cleaning_aspect(aspect_)
                                     if str(polarity_).lower() == 'positive':
@@ -367,45 +459,26 @@ def Oneg1A_Opos2A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos2A_list, 
 
                                         Opos2A = random.choice(Opos2A_list).format(aspect, aspect_) + review_
 
-                                        blocks["Oneg1A_Opos2A_" + str(counter)] = {}
-                                        blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A'] = {}
-                                        blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A']['Opinion'] = Oneg1A
-                                        blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A']['Labels'] = {}
-                                        blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A']['Labels']['Key'] = key
-                                        blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A']['Labels']['Aspect'] = aspect
-                                        blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A']['Labels']['Polarity'] = str(polarity).lower()
+                                        blocks[f"Oneg1A_Opos2A_{counter}"] = {
+                                            'Oneg1A': {
+                                                'Opinion': Oneg1A,
+                                                'Labels': {
+                                                    'Key': key,
+                                                    'Aspect': aspect,
+                                                    'Polarity': str(polarity).lower()
+                                                }
+                                            },
+                                            'Opos2A': {
+                                                'Opinion': Opos2A,
+                                                'Labels': {
+                                                    'Key': key_,
+                                                    'Aspect': aspect_,
+                                                    'Polarity': str(polarity_).lower()
+                                                }
+                                            }
+                                        }
+    return blocks
 
-                                        blocks["Oneg1A_Opos2A_" + str(counter)]['Opos2A'] = {}
-                                        blocks["Oneg1A_Opos2A_" + str(counter)]['Opos2A']['Opinion'] = Opos2A
-                                        blocks["Oneg1A_Opos2A_" + str(counter)]['Opos2A']['Labels'] = {}
-                                        blocks["Oneg1A_Opos2A_" + str(counter)]['Opos2A']['Labels']['Key'] = key_
-                                        blocks["Oneg1A_Opos2A_" + str(counter)]['Opos2A']['Labels']['Aspect'] = aspect_
-                                        blocks["Oneg1A_Opos2A_" + str(counter)]['Opos2A']['Labels']['Polarity'] = str(polarity_).lower()
-                        
-                        else:
-                            for aspect_, review_, polarity_, key_ in aspect_review_polarity_key_list:
-                                aspect_ = cleaning_aspect(aspect_)
-                                if str(polarity_).lower() == 'positive':
-                                    counter += 1
-
-                                    Opos2A = random.choice(Opos2A_list).format(aspect, aspect_) + review_
-
-                                    blocks["Oneg1A_Opos2A_" + str(counter)] = {}
-                                    blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A'] = {}
-                                    blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A']['Opinion'] = Oneg1A
-                                    blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A']['Labels'] = {}
-                                    blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A']['Labels']['Key'] = key
-                                    blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A']['Labels']['Aspect'] = aspect
-                                    blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A']['Labels']['Polarity'] = str(polarity).lower()
-
-                                    blocks["Oneg1A_Opos2A_" + str(counter)]['Opos2A'] = {}
-                                    blocks["Oneg1A_Opos2A_" + str(counter)]['Opos2A']['Opinion'] = Opos2A
-                                    blocks["Oneg1A_Opos2A_" + str(counter)]['Opos2A']['Labels'] = {}
-                                    blocks["Oneg1A_Opos2A_" + str(counter)]['Opos2A']['Labels']['Key'] = key_
-                                    blocks["Oneg1A_Opos2A_" + str(counter)]['Opos2A']['Labels']['Aspect'] = aspect_
-                                    blocks["Oneg1A_Opos2A_" + str(counter)]['Opos2A']['Labels']['Polarity'] = str(polarity_).lower()
-                                    
-    return(blocks)
 
 
 
@@ -413,7 +486,7 @@ done_items_neg = []
 all_blocks_neg = {}
 
 for index in list(retrieved_items_dict.keys()):
-    #print(str(index))
+    print(str(index))
     retrieved_items_1 = retrieved_items_dict[str(index)].get("retrieved items")
     retrieved_items_with_review = [i for i in retrieved_items_1 if metaData_for_cellPhones.query("asin == @i").num_reviews.values[0] > 0]
     #print('retrieved_items_with_review:', retrieved_items_with_review)
@@ -421,38 +494,39 @@ for index in list(retrieved_items_dict.keys()):
         for item in retrieved_items_with_review:
             if item not in done_items_neg:
                 done_items_neg.append(item)
-                #print(item)
+                print(item)
                 all_blocks_neg[str(item)] = {}
                 blocks_Qpos1A_Apos1A = Qpos1A_Apos1A(item, wrong_aspects, correct_forms, Q1A_list, dict_AspectSentiment)
                 all_blocks_neg[str(item)]['Qpos1A_Apos1A'] = blocks_Qpos1A_Apos1A
                 print("blocks_Qpos1A_Apos1A is DONE!")
                 
-                # blocks_Oneg1A_Opos1A = Oneg1A_Opos1A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos1A_list, dict_AspectSentiment)
-                # all_blocks_neg[str(item)]['Oneg1A_Opos1A'] = blocks_Oneg1A_Opos1A
-                # print("blocks_Oneg1A_Opos1A is DONE!")
+                blocks_Oneg1A_Opos1A = Oneg1A_Opos1A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos1A_list, dict_AspectSentiment)
+                #ipdb.set_trace()
+                all_blocks_neg[str(item)]['Oneg1A_Opos1A'] = blocks_Oneg1A_Opos1A
+                print("blocks_Oneg1A_Opos1A is DONE!")
 
-                # blocks_Oneg1A_Opos1B_retrieved = Oneg1A_Opos1B(item, retrieved_items_with_review, wrong_aspects, correct_forms, Oneg1A_list, Opos1B_list,
-                #                                      dict_AspectSentiment, metaData_for_cellPhones, retrieved=True, also_view=False)
-                # all_blocks_neg[str(item)]['Oneg1A_Opos1B_retrieved'] = blocks_Oneg1A_Opos1B_retrieved
-                # print("blocks_Oneg1A_Opos1B_retrieved is DONE!")
+                blocks_Oneg1A_Opos1B_retrieved = Oneg1A_Opos1B(item, retrieved_items_with_review, wrong_aspects, correct_forms, Oneg1A_list, Opos1B_list,
+                                                     dict_AspectSentiment, metaData_for_cellPhones, retrieved=True, also_view=False)
+                all_blocks_neg[str(item)]['Oneg1A_Opos1B_retrieved'] = blocks_Oneg1A_Opos1B_retrieved
+                print("blocks_Oneg1A_Opos1B_retrieved is DONE!")
 
-                # blocks_Oneg1A_Opos1B_also_view = Oneg1A_Opos1B(item, retrieved_items_with_review, wrong_aspects, correct_forms, Oneg1A_list, Opos1B_list,
-                #                                      dict_AspectSentiment, metaData_for_cellPhones, retrieved=False, also_view=True)
-                # all_blocks_neg[str(item)]['Oneg1A_Opos1B_also_view'] = blocks_Oneg1A_Opos1B_also_view
-                # print("blocks_Oneg1A_Opos1B_also_view is DONE!")
+                blocks_Oneg1A_Opos1B_also_view = Oneg1A_Opos1B(item, retrieved_items_with_review, wrong_aspects, correct_forms, Oneg1A_list, Opos1B_list,
+                                                     dict_AspectSentiment, metaData_for_cellPhones, retrieved=False, also_view=True)
+                all_blocks_neg[str(item)]['Oneg1A_Opos1B_also_view'] = blocks_Oneg1A_Opos1B_also_view
+                print("blocks_Oneg1A_Opos1B_also_view is DONE!")
 
-                # blocks_Oneg1A_Opos2A_restricted = Oneg1A_Opos2A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos2A_list,
-                #                                     dict_AspectSentiment, restricted_version=True)
-                # all_blocks_neg[str(item)]['Oneg1A_Opos2A_restricted'] = blocks_Oneg1A_Opos2A_restricted
-                # print("blocks_Oneg1A_Opos2A_restricted is DONE!")
+                blocks_Oneg1A_Opos2A_restricted = Oneg1A_Opos2A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos2A_list,
+                                                    dict_AspectSentiment, restricted_version=True)
+                all_blocks_neg[str(item)]['Oneg1A_Opos2A_restricted'] = blocks_Oneg1A_Opos2A_restricted
+                print("blocks_Oneg1A_Opos2A_restricted is DONE!")
                 
-                # blocks_Oneg1A_Opos2A_unrestricted = Oneg1A_Opos2A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos2A_list,
-                #                                                   dict_AspectSentiment, restricted_version=False)
-                # all_blocks_neg[str(item)]['Oneg1A_Opos2A_unrestricted'] = blocks_Oneg1A_Opos2A_unrestricted
-                # print("blocks_Oneg1A_Opos2A_unrestricted is DONE!")
+                blocks_Oneg1A_Opos2A_unrestricted = Oneg1A_Opos2A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos2A_list,
+                                                                  dict_AspectSentiment, restricted_version=False)
+                all_blocks_neg[str(item)]['Oneg1A_Opos2A_unrestricted'] = blocks_Oneg1A_Opos2A_unrestricted
+                print("blocks_Oneg1A_Opos2A_unrestricted is DONE!")
 
 with open('./100_blocks_neg.json', 'w') as f:
     json.dump(all_blocks_neg, f)
 
-# with open('./done_items_neg.pkl', 'wb') as fp:
-#     pickle.dump(done_items_neg, fp, protocol=4)
+with open('./done_items_neg.pkl', 'wb') as fp:
+    pickle.dump(done_items_neg, fp, protocol=4)
