@@ -17,7 +17,10 @@ with open(input_file, 'r') as f:
     dict_AspectSentiment = json.load(f)
 
 
-with open("./retrieved_items_dict.json") as f:     #source: MAIN.py
+
+
+# add //"B01N6NTIRH", B07D3QKRW1,  B07D3QKRW1, B08FL1N9V3
+with open("./sample_retrieved_items_dict.json") as f:     #source: MAIN.py
     retrieved_items_dict = json.load(f)
 retrieved_items_dict
 
@@ -179,7 +182,7 @@ def Qpos1A_Apos1A(item, wrong_aspects, correct_forms, Q1A_list, dict_AspectSenti
             for unique_id, review_sentiment in review_dict.items():
                 aspects = review_sentiment.get('aspect', [])  # Handle empty aspect list
                 sentiments = review_sentiment.get('sentiment', [])  # Handle empty sentiment list
-                review = review_sentiment['text']
+                review = review_sentiment['sentence']
                 review = cleaning_review(review)
                 
                 if aspects:  # Only process if aspects list is not empty
@@ -227,7 +230,7 @@ def Oneg1A_Opos1A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos1A_list, 
                 key = item_reviewer_aspect_key
                 aspects = review_sentiment.get('aspect', [])  # Ensure aspects list is retrieved, default to empty
                 sentiments = review_sentiment.get('sentiment', [])  # Ensure sentiments list is retrieved, default to empty
-                review = review_sentiment['text']
+                review = review_sentiment['sentence']
                 review = cleaning_review(review)
                 
                 if aspects:  # Only process if aspects list is not empty
@@ -245,7 +248,7 @@ def Oneg1A_Opos1A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos1A_list, 
                 key = item_reviewer_aspect_key
                 aspects = review_sentiment.get('aspect', [])  # Ensure aspects list is retrieved, default to empty
                 sentiments = review_sentiment.get('sentiment', [])  # Ensure sentiments list is retrieved, default to empty
-                review = review_sentiment['text']
+                review = review_sentiment['sentence']
                 review = cleaning_review(review)
                 
                 if aspects:  # Only process if aspects list is not empty
@@ -265,6 +268,9 @@ def Oneg1A_Opos1A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos1A_list, 
                                     if str(polarity_).lower() == 'positive' and np.logical_or(
                                         str(aspect) == str(aspect_), aspects_similarity_check(aspect, aspect_, similar_aspect_list)
                                     ):
+                                        
+                                        print("aspect: ",aspect)
+                                        print("aspect_:",aspect_)
                                         counter += 1
                                         sentence_aspect_ = review_
                                         Opos1A = random.choice(Opos1A_list) + sentence_aspect_
@@ -451,6 +457,7 @@ def Oneg1A_Opos2A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos2A_list, 
                                                 }
                                             }
                             else:
+                                #ipdb.set_trace()
                                 # If restricted_version is False, we don't check for agreement
                                 for aspect_, review_, polarity_, key_ in aspect_review_polarity_key_list:
                                     aspect_ = cleaning_aspect(aspect_)
@@ -480,53 +487,102 @@ def Oneg1A_Opos2A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos2A_list, 
     return blocks
 
 
+import json
+import pickle
 
+save_interval = 10  # Save after every 10 items
+counter = 0  # Counter to track how many items have been processed since the last save
 
-done_items_neg = []
-all_blocks_neg = {}
+save_path_json = './200_blocks_neg.json'
+save_path_pkl = './done_items_neg.pkl'
+
+# Load previous progress if available
+try:
+    with open(save_path_pkl, 'rb') as fp:
+        done_items_neg = pickle.load(fp)
+except (FileNotFoundError, EOFError):
+    done_items_neg = []
+
+# Start the JSON file if it's the first time writing
+try:
+    with open(save_path_json, 'r') as f:
+        # Check if the file has content; continue if it exists
+        pass
+except (FileNotFoundError, json.JSONDecodeError):
+    # If the file doesn't exist, initialize it with an opening curly brace
+    with open(save_path_json, 'w') as f:
+        f.write("{\n")
+
+# Function to append a batch of key-value pairs to the JSON file
+def append_to_json_file(file_path, batch_dict):
+    with open(file_path, 'a') as f:
+        for key, value in batch_dict.items():
+            # Dump key-value pair and add a comma and newline
+            json.dump({key: value}, f)
+            f.write(",\n")
 
 for index in list(retrieved_items_dict.keys()):
     print(str(index))
     retrieved_items_1 = retrieved_items_dict[str(index)].get("retrieved items")
     retrieved_items_with_review = [i for i in retrieved_items_1 if metaData_for_cellPhones.query("asin == @i").num_reviews.values[0] > 0]
-    #print('retrieved_items_with_review:', retrieved_items_with_review)
+
     if len(retrieved_items_with_review) > 0:
         for item in retrieved_items_with_review:
             if item not in done_items_neg:
                 done_items_neg.append(item)
                 print(item)
-                all_blocks_neg[str(item)] = {}
+                item_data = {}
+
                 blocks_Qpos1A_Apos1A = Qpos1A_Apos1A(item, wrong_aspects, correct_forms, Q1A_list, dict_AspectSentiment)
-                all_blocks_neg[str(item)]['Qpos1A_Apos1A'] = blocks_Qpos1A_Apos1A
+                item_data['Qpos1A_Apos1A'] = blocks_Qpos1A_Apos1A
                 print("blocks_Qpos1A_Apos1A is DONE!")
-                
+
                 blocks_Oneg1A_Opos1A = Oneg1A_Opos1A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos1A_list, dict_AspectSentiment)
-                #ipdb.set_trace()
-                all_blocks_neg[str(item)]['Oneg1A_Opos1A'] = blocks_Oneg1A_Opos1A
+                item_data['Oneg1A_Opos1A'] = blocks_Oneg1A_Opos1A
                 print("blocks_Oneg1A_Opos1A is DONE!")
 
                 blocks_Oneg1A_Opos1B_retrieved = Oneg1A_Opos1B(item, retrieved_items_with_review, wrong_aspects, correct_forms, Oneg1A_list, Opos1B_list,
                                                      dict_AspectSentiment, metaData_for_cellPhones, retrieved=True, also_view=False)
-                all_blocks_neg[str(item)]['Oneg1A_Opos1B_retrieved'] = blocks_Oneg1A_Opos1B_retrieved
+                item_data['Oneg1A_Opos1B_retrieved'] = blocks_Oneg1A_Opos1B_retrieved
                 print("blocks_Oneg1A_Opos1B_retrieved is DONE!")
 
                 blocks_Oneg1A_Opos1B_also_view = Oneg1A_Opos1B(item, retrieved_items_with_review, wrong_aspects, correct_forms, Oneg1A_list, Opos1B_list,
                                                      dict_AspectSentiment, metaData_for_cellPhones, retrieved=False, also_view=True)
-                all_blocks_neg[str(item)]['Oneg1A_Opos1B_also_view'] = blocks_Oneg1A_Opos1B_also_view
+                item_data['Oneg1A_Opos1B_also_view'] = blocks_Oneg1A_Opos1B_also_view
                 print("blocks_Oneg1A_Opos1B_also_view is DONE!")
 
                 blocks_Oneg1A_Opos2A_restricted = Oneg1A_Opos2A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos2A_list,
                                                     dict_AspectSentiment, restricted_version=True)
-                all_blocks_neg[str(item)]['Oneg1A_Opos2A_restricted'] = blocks_Oneg1A_Opos2A_restricted
+                item_data['Oneg1A_Opos2A_restricted'] = blocks_Oneg1A_Opos2A_restricted
                 print("blocks_Oneg1A_Opos2A_restricted is DONE!")
                 
                 blocks_Oneg1A_Opos2A_unrestricted = Oneg1A_Opos2A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos2A_list,
                                                                   dict_AspectSentiment, restricted_version=False)
-                all_blocks_neg[str(item)]['Oneg1A_Opos2A_unrestricted'] = blocks_Oneg1A_Opos2A_unrestricted
+                item_data['Oneg1A_Opos2A_unrestricted'] = blocks_Oneg1A_Opos2A_unrestricted
                 print("blocks_Oneg1A_Opos2A_unrestricted is DONE!")
 
-with open('./100_blocks_neg.json', 'w') as f:
-    json.dump(all_blocks_neg, f)
+                # Append item data to the JSON file and free memory
+                append_to_json_file(save_path_json, {str(item): item_data})
+                counter += 1
 
-with open('./done_items_neg.pkl', 'wb') as fp:
+                # Save progress every 10 items in the pickle file for done_items_neg
+                if counter % save_interval == 0:
+                    with open(save_path_pkl, 'wb') as fp:
+                        pickle.dump(done_items_neg, fp, protocol=4)
+                    print(f"Progress saved after processing {counter} items.")
+
+                # Free memory after processing each item
+                del item_data
+
+# Finalize the JSON by removing the last comma and closing the structure
+with open(save_path_json, 'rb+') as f:
+    f.seek(0, 2)  # Move the pointer to the end of the file
+    f.seek(f.tell() - 2, 0)  # Move back two positions to remove the last comma
+    f.truncate()  # Remove the last comma
+    f.write(b"\n}")  # Close the JSON dictionary
+
+# Final save for done_items_neg
+with open(save_path_pkl, 'wb') as fp:
     pickle.dump(done_items_neg, fp, protocol=4)
+
+print("Final progress saved!")
