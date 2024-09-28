@@ -180,6 +180,7 @@ def Qpos1A_Apos1A(item, wrong_aspects, correct_forms, Q1A_list, dict_AspectSenti
     if item_review_list:
         for review_dict in item_review_list:
             for unique_id, review_sentiment in review_dict.items():
+                unique_id = review_sentiment["asin"]+'_'+review_sentiment["user_id"]+'_'+unique_id
                 aspects = review_sentiment.get('aspect', [])  # Handle empty aspect list
                 sentiments = review_sentiment.get('sentiment', [])  # Handle empty sentiment list
                 review = review_sentiment['sentence']
@@ -227,7 +228,7 @@ def Oneg1A_Opos1A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos1A_list, 
         # First loop: collect positive aspects
         for review_dict in item_review_list:
             for item_reviewer_aspect_key, review_sentiment in review_dict.items():
-                key = item_reviewer_aspect_key
+                key  = review_sentiment["asin"]+'_'+review_sentiment["user_id"]+'_'+item_reviewer_aspect_key
                 aspects = review_sentiment.get('aspect', [])  # Ensure aspects list is retrieved, default to empty
                 sentiments = review_sentiment.get('sentiment', [])  # Ensure sentiments list is retrieved, default to empty
                 review = review_sentiment['sentence']
@@ -245,7 +246,7 @@ def Oneg1A_Opos1A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos1A_list, 
         # Second loop: process negative aspects and match with positive ones
         for review_dict in item_review_list:
             for item_reviewer_aspect_key, review_sentiment in review_dict.items():
-                key = item_reviewer_aspect_key
+                key = review_sentiment["asin"]+'_'+review_sentiment["user_id"]+'_'+item_reviewer_aspect_key
                 aspects = review_sentiment.get('aspect', [])  # Ensure aspects list is retrieved, default to empty
                 sentiments = review_sentiment.get('sentiment', [])  # Ensure sentiments list is retrieved, default to empty
                 review = review_sentiment['sentence']
@@ -318,10 +319,10 @@ def Oneg1A_Opos1B(item, retrieved_items, wrong_aspects, correct_forms, Oneg1A_li
                 aspect_review_polarity_key_list = []
                 for item_2_review_dict in item_2_review_list:
                     for item_2_reviewer_aspect_key, item_2_review_sentiment in item_2_review_dict.items():
-                        item_2_key = item_2_reviewer_aspect_key
+                        item_2_key = item_2_review_sentiment["asin"]+'_'+item_2_review_sentiment["user_id"]+'_'+item_2_reviewer_aspect_key
                         aspects = item_2_review_sentiment.get('aspect', [])  # Handle empty aspect list
                         sentiments = item_2_review_sentiment.get('sentiment', [])  # Handle empty sentiment list
-                        item_2_review = cleaning_review(item_2_review_sentiment['text'])
+                        item_2_review = cleaning_review(item_2_review_sentiment['sentence'])
                         
                         if aspects:
                             for aspect, sentiment in zip(aspects, sentiments):
@@ -337,10 +338,10 @@ def Oneg1A_Opos1B(item, retrieved_items, wrong_aspects, correct_forms, Oneg1A_li
         if item_1_review_list:
             for item_1_review_dict in item_1_review_list:
                 for item_1_reviewer_aspect_key, item_1_review_sentiment in item_1_review_dict.items():
-                    item_1_key = item_1_reviewer_aspect_key
+                    item_1_key = item_1_review_sentiment["asin"]+'_'+item_1_review_sentiment["user_id"]+'_'+item_1_reviewer_aspect_key
                     aspects = item_1_review_sentiment.get('aspect', [])  # Handle empty aspect list
                     sentiments = item_1_review_sentiment.get('sentiment', [])  # Handle empty sentiment list
-                    item_1_review = cleaning_review(item_1_review_sentiment['text'])
+                    item_1_review = cleaning_review(item_1_review_sentiment['sentence'])
                     
                     if aspects:
                         for aspect, sentiment in zip(aspects, sentiments):
@@ -393,10 +394,10 @@ def Oneg1A_Opos2A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos2A_list, 
         # Collect all positive reviews for aspects in `aspect_review_polarity_key_list`
         for review_dict in item_review_list:
             for item_reviewer_aspect_key, review_sentiment in review_dict.items():
-                key = item_reviewer_aspect_key
+                key =  review_sentiment["asin"]+'_'+review_sentiment["user_id"]+'_'+item_reviewer_aspect_key
                 aspects = review_sentiment.get('aspect', [])  # Handle empty aspect list
                 sentiments = review_sentiment.get('sentiment', [])  # Handle empty sentiment list
-                review = cleaning_review(review_sentiment['text'])
+                review = cleaning_review(review_sentiment['sentence'])
 
                 if aspects:
                     for aspect, polarity in zip(aspects, sentiments):
@@ -408,10 +409,10 @@ def Oneg1A_Opos2A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos2A_list, 
         # Process negative aspects and generate Oneg1A and Opos2A blocks
         for review_dict in item_review_list:
             for item_reviewer_aspect_key, review_sentiment in review_dict.items():
-                key = item_reviewer_aspect_key
+                key = review_sentiment["asin"]+'_'+review_sentiment["user_id"]+'_'+item_reviewer_aspect_key
                 aspects = review_sentiment.get('aspect', [])  # Handle empty aspect list
                 sentiments = review_sentiment.get('sentiment', [])  # Handle empty sentiment list
-                review = cleaning_review(review_sentiment['text'])
+                review = cleaning_review(review_sentiment['sentence'])
 
                 if aspects:
                     for aspect, polarity in zip(aspects, sentiments):
