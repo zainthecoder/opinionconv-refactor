@@ -19,7 +19,7 @@ with open(input_file, "r") as f:
 
 
 # add //"B01N6NTIRH", B07D3QKRW1,  B07D3QKRW1, B08FL1N9V3
-with open("./sample_retrieved_items_dict.json") as f:  # source: MAIN.py
+with open("./retrieved_items_dict.json") as f:  # source: MAIN.py
     retrieved_items_dict = json.load(f)
 retrieved_items_dict
 
@@ -539,7 +539,7 @@ def Opos1B_Oneg2B(
     if item_review_list:
         for review_dict in item_review_list:
             for item_reviewer_aspect_key, review_sentiment in review_dict.items():
-                kkey = (
+                key = (
                     review_sentiment["asin"]
                     + "_"
                     + review_sentiment["user_id"]
@@ -624,40 +624,25 @@ def Opos1B_Oneg2B(
     return blocks
 
 
-import json
 import pickle
 
 save_interval = 10  # Save after every 10 items
 counter = 0  # Counter to track how many items have been processed since the last save
 
-save_path_json = "./200_blocks_pos.json"
-save_path_pkl = "./done_items_pos.pkl"
+processed_data_pkl_path = "./100_blocks_pos.pkl"
+#save_path_pkl = "./done_items_pos.pkl"
 
 # Load previous progress if available
-try:
-    with open(save_path_pkl, "rb") as fp:
-        done_items_pos = pickle.load(fp)
-except (FileNotFoundError, EOFError):
-    done_items_pos = []
+# try:
+#     with open(save_path_pkl, "rb") as fp:
+#         done_items_pos = pickle.load(fp)
+# except (FileNotFoundError, EOFError):
+#     done_items_pos = []
 
-# Start the JSON file if it's the first time writing
-try:
-    with open(save_path_json, "r") as f:
-        # Check if the file has content; continue if it exists
-        pass
-except (FileNotFoundError, json.JSONDecodeError):
-    # If the file doesn't exist, initialize it with an opening curly brace
-    with open(save_path_json, "w") as f:
-        f.write("{\n")
-
-
-# Function to append a batch of key-value pairs to the JSON file
-def append_to_json_file(file_path, batch_dict):
-    with open(file_path, "a") as f:
-        for key, value in batch_dict.items():
-            # Dump key-value pair and add a comma and newline
-            json.dump({key: value}, f)
-            f.write(",\n")
+# Function to append an item to a pickle file
+def append_to_pickle(file_path, item_data):
+    with open(file_path, "ab") as f:
+        pickle.dump(item_data, f, protocol=4)
 
 
 for index in list(retrieved_items_dict.keys()):
@@ -671,10 +656,10 @@ for index in list(retrieved_items_dict.keys()):
     print("retrieved_items_with_review:", retrieved_items_with_review)
     if len(retrieved_items_with_review) > 0:
         for item in retrieved_items_with_review:
-            if item not in done_items_pos:
+            if item:
                 print(item)
                 item_data = {}
-                done_items_pos.append(item)
+                #done_items_pos.append(item)
 
                 blocks_Opos1B_Opos1B2_only_agreement = Opos1B_Opos1B2(
                     item,
@@ -728,28 +713,23 @@ for index in list(retrieved_items_dict.keys()):
                 item_data["Opos1B_Oneg2B"] = blocks_Opos1B_Oneg2B
                 print("blocks_Opos1B_Oneg2B is DONE!")
 
-                # Append item data to the JSON file and free memory
-                append_to_json_file(save_path_json, {str(item): item_data})
+                # Append the processed data for the current item directly to the pickle file
+                append_to_pickle(processed_data_pkl_path, {str(item): item_data})
                 counter += 1
 
                 # Save progress every 10 items in the pickle file for done_items_neg
-                if counter % save_interval == 0:
-                    with open(save_path_pkl, "wb") as fp:
-                        pickle.dump(done_items_pos, fp, protocol=4)
-                    print(f"Progress saved after processing {counter} items.")
+                # if counter % save_interval == 0:
+                #     with open(save_path_pkl, "wb") as fp:
+                #         pickle.dump(done_items_pos, fp, protocol=4)
+                #     print(f"Progress saved after processing {counter} items.")
 
                 # Free memory after processing each item
                 del item_data
 
-# Finalize the JSON by removing the last comma and closing the structure
-with open(save_path_json, "rb+") as f:
-    f.seek(0, 2)  # Move the pointer to the end of the file
-    f.seek(f.tell() - 2, 0)  # Move back two positions to remove the last comma
-    f.truncate()  # Remove the last comma
-    f.write(b"\n}")  # Close the JSON dictionary
+
 
 # Final save for done_items_neg
-with open(save_path_pkl, "wb") as fp:
-    pickle.dump(done_items_pos, fp, protocol=4)
+# with open(save_path_pkl, "wb") as fp:
+#     pickle.dump(done_items_pos, fp, protocol=4)
 
 print("Final progress saved!")

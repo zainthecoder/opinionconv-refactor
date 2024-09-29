@@ -7,20 +7,18 @@ import numpy as np
 import itertools
 
 
-with open("./200_blocks_neg.json") as f:
-    blocks_neg_100 = json.load(f)
+# Load pickled data instead of JSON files
+with open("./100_blocks_neg.pkl", 'rb') as f:
+    blocks_neg_100 = pickle.load(f)
 
-with open("./200_blocks_pos.json") as f:
-    blocks_pos_100 = json.load(f)
+with open("./100_blocks_pos.pkl", 'rb') as f:
+    blocks_pos_100 = pickle.load(f)
 
 
-with open("./sample_retrieved_items_dict.json") as f:
+with open("./retrieved_items_dict.json") as f:
     retrieved_items_dict = json.load(f)
 
 metaData_for_cellPhones = pd.read_pickle("./metaData_for_cellPhones.pkl")
-
-blocks_neg_100 = blocks_neg_100[0]
-blocks_pos_100 = blocks_pos_100[0]
 
 all_items_with_review = []
 for index in list(retrieved_items_dict.keys()):
