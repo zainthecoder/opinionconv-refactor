@@ -1,17 +1,3 @@
-#Installation
-- python -m spacy download en_core_web_trf
-- export NLTK_DATA=/home/stud/abedinz1/localDisk/opinionconv-refactor
-- export IPYTHONDIR=/home/stud/abedinz1/localDisk/opinionconv-refactor/.ipython
-- python -m nltk.downloader stopwords
-- python MAIN.py
-- python -W ignore MAIN.py
-- pip3 install torch torchvision torchaudio
-- When using bender if you want to update the python version
-    a) Do module spider python
-    b) module load python.xx
-    c) if you have a shell file for job running, add module load python.xx in the shell file also
-
-
 
 ## Project Pipeline
 
@@ -82,8 +68,8 @@ df_ratings_raw_cellPhones = load_dataset(
     split="full",
     trust_remote_code=True,
 )
-Output:
 
+Output:
 metaData_for_cellPhones.pkl
 reviews_wholeReview.txt
 reviews_for_cellPhones_df_cleaned.csv
@@ -94,50 +80,69 @@ Step 2: Run puntuation_model.py
 Punctuate the cleaned reviews.
 
 Input:
-
 reviews_for_cellPhones_df_cleaned.csv
-Output:
 
+Output:
 final_reviews_for_cellPhones_punctuated.csv
+
 Step 3: Run ABSA.py
 Perform aspect-based sentiment analysis on the reviews.
 
 Input:
-
 final_reviews_for_cellPhones_punctuated.csv
-Output:
 
+Output:
 final_reviews_after_absa.json
+
 Step 4: Transform Data Schema
 Convert final_reviews_after_absa.json into the required schema.
 
 Input:
-
 final_reviews_after_absa.json
-Output:
 
+Output:
 transformed_data.json
+
+
 Step 5: Run generating_qa_op_pairs.py
 Generate negative question-answer opinion pairs.
 
 Input:
-
 metaData_for_cellPhones.pkl
 wrong_aspects_3.pkl
 transformed_data.json
 retrieved_items_dict.json
-Output:
 
+Output:
 100_blocks_neg.pkl
+
+
 Step 6: Run pos_generating_op_pairs.py
 Generate positive question-answer opinion pairs.
 
 Input:
-
 metaData_for_cellPhones.pkl
 wrong_aspects_3.pkl
 transformed_data.json
 retrieved_items_dict.json
-Output:
 
+Output:
 100_blocks_pos.pkl
+
+
+
+#Installation
+- python -m spacy download en_core_web_trf
+- export NLTK_DATA=/home/stud/abedinz1/localDisk/opinionconv-refactor
+- export IPYTHONDIR=/home/stud/abedinz1/localDisk/opinionconv-refactor/.ipython
+- python -m nltk.downloader stopwords
+- python MAIN.py
+- python -W ignore MAIN.py
+- pip3 install torch torchvision torchaudio
+- When using bender if you want to update the python version
+    a) Do module spider python
+    b) module load python.xx
+    c) if you have a shell file for job running, add module load python.xx in the shell file also
+
+
+
