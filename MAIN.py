@@ -576,9 +576,6 @@ except:
 
 
 for k1, v1 in list(all_combinations_dict.items()):
-    print("k1: ", k1)
-    print("v1: ", v1)
-
     list_retrieved_items_final = []
     rules = []
     brand_value = v1["brand"]
@@ -606,15 +603,7 @@ for k1, v1 in list(all_combinations_dict.items()):
     retrieved_items_dict[k1]["retrieved items"] = list_retrieved_items_final
 
 
-print("##")
-print("retrieved_items_dict")
-pprint.pprint(retrieved_items_dict)
-print("\n\n")
-
 with open("./retrieved_items_dict.json", "w") as f:
     json.dump(retrieved_items_dict, f)
 # else:
 #     print("mil gaya ./retrieved_items_dict.json")
-
-for k, v in list(retrieved_items_dict.items())[55:65]:
-    print(k, v)
