@@ -20,7 +20,7 @@ with open(input_file, "r") as f:
 
 
 # add //"B01N6NTIRH", B07D3QKRW1,  B07D3QKRW1, B08FL1N9V3
-with open("./sample_retrieved_items_dict.json") as f:  # source: MAIN.py
+with open("./retrieved_items_dict.json") as f:  # source: MAIN.py
     retrieved_items_dict = json.load(f)
 retrieved_items_dict
 
@@ -732,7 +732,7 @@ import pickle
 save_interval = 10  # Save after every 10 items
 counter = 0  # Counter to track how many items have been processed since the last save
 
-save_path_json = "./200_blocks_neg.json"
+save_path_json = "./100_blocks_neg.json"
 save_path_pkl = "./done_items_neg.pkl"
 
 # Load previous progress if available
