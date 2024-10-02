@@ -724,26 +724,24 @@ def Oneg1A_Opos2A(
                                         }
     return blocks
 
-import pickle
+import json
+done_items_neg = []
+all_item_data = {}
 
 save_interval = 10  # Save after every 10 items
 counter = 0  # Counter to track how many items have been processed since the last save
 
 # Paths for saving files
-#done_items_pkl_path = "./done_items_neg.pkl"
-processed_data_pkl_path = "./100_blocks_neg.pkl"
+done_items_pkl_path = "./done_items_neg.json"
+processed_data_pkl_path = "./100_blocks_neg.json"
 
 # Load previous progress for done_items_neg if available
-# try:
-#     with open(done_items_pkl_path, "rb") as fp:
-#         done_items_neg = pickle.load(fp)
-# except (FileNotFoundError, EOFError):
-#     done_items_neg = []
+try:
+    with open(done_items_pkl_path, "r") as fp:
+        done_items_neg = json.load(fp)
+except (FileNotFoundError, EOFError):
+    done_items_neg = []
 
-# Function to append an item to a pickle file
-def append_to_pickle(file_path, item_data):
-    with open(file_path, "ab") as f:
-        pickle.dump(item_data, f, protocol=4)
 
 for index in list(retrieved_items_dict.keys()):
     print(str(index))
@@ -756,101 +754,105 @@ for index in list(retrieved_items_dict.keys()):
 
     if len(retrieved_items_with_review) > 0:
         for item in retrieved_items_with_review:
-            if item:
-                #done_items_neg.append(item)
-                print(item)
-                item_data = {}
+            if item not in done_items_neg:
 
-                blocks_Qpos1A_Apos1A = Qpos1A_Apos1A(
-                    item, wrong_aspects, correct_forms, Q1A_list, dict_AspectSentiment
-                )
-                item_data["Qpos1A_Apos1A"] = blocks_Qpos1A_Apos1A
-                print("blocks_Qpos1A_Apos1A is DONE!")
+                if item:
+                    done_items_neg.append(item)
+                    print(item)
+                    item_data = {}
 
-                blocks_Oneg1A_Opos1A = Oneg1A_Opos1A(
-                    item,
-                    wrong_aspects,
-                    correct_forms,
-                    Oneg1A_list,
-                    Opos1A_list,
-                    dict_AspectSentiment,
-                )
-                item_data["Oneg1A_Opos1A"] = blocks_Oneg1A_Opos1A
-                print("blocks_Oneg1A_Opos1A is DONE!")
+                    blocks_Qpos1A_Apos1A = Qpos1A_Apos1A(
+                        item, wrong_aspects, correct_forms, Q1A_list, dict_AspectSentiment
+                    )
+                    item_data["Qpos1A_Apos1A"] = blocks_Qpos1A_Apos1A
+                    print("blocks_Qpos1A_Apos1A is DONE!")
 
-                blocks_Oneg1A_Opos1B_retrieved = Oneg1A_Opos1B(
-                    item,
-                    retrieved_items_with_review,
-                    wrong_aspects,
-                    correct_forms,
-                    Oneg1A_list,
-                    Opos1B_list,
-                    dict_AspectSentiment,
-                    metaData_for_cellPhones,
-                    retrieved=True,
-                    also_view=False,
-                )
-                item_data["Oneg1A_Opos1B_retrieved"] = blocks_Oneg1A_Opos1B_retrieved
-                print("blocks_Oneg1A_Opos1B_retrieved is DONE!")
+                    blocks_Oneg1A_Opos1A = Oneg1A_Opos1A(
+                        item,
+                        wrong_aspects,
+                        correct_forms,
+                        Oneg1A_list,
+                        Opos1A_list,
+                        dict_AspectSentiment,
+                    )
+                    item_data["Oneg1A_Opos1A"] = blocks_Oneg1A_Opos1A
+                    print("blocks_Oneg1A_Opos1A is DONE!")
 
-                blocks_Oneg1A_Opos1B_also_view = Oneg1A_Opos1B(
-                    item,
-                    retrieved_items_with_review,
-                    wrong_aspects,
-                    correct_forms,
-                    Oneg1A_list,
-                    Opos1B_list,
-                    dict_AspectSentiment,
-                    metaData_for_cellPhones,
-                    retrieved=False,
-                    also_view=True,
-                )
-                item_data["Oneg1A_Opos1B_also_view"] = blocks_Oneg1A_Opos1B_also_view
-                print("blocks_Oneg1A_Opos1B_also_view is DONE!")
+                    # blocks_Oneg1A_Opos1B_retrieved = Oneg1A_Opos1B(
+                    #     item,
+                    #     retrieved_items_with_review,
+                    #     wrong_aspects,
+                    #     correct_forms,
+                    #     Oneg1A_list,
+                    #     Opos1B_list,
+                    #     dict_AspectSentiment,
+                    #     metaData_for_cellPhones,
+                    #     retrieved=True,
+                    #     also_view=False,
+                    # )
+                    # item_data["Oneg1A_Opos1B_retrieved"] = blocks_Oneg1A_Opos1B_retrieved
+                    # print("blocks_Oneg1A_Opos1B_retrieved is DONE!")
 
-                blocks_Oneg1A_Opos2A_restricted = Oneg1A_Opos2A(
-                    item,
-                    wrong_aspects,
-                    correct_forms,
-                    Oneg1A_list,
-                    Opos2A_list,
-                    dict_AspectSentiment,
-                    restricted_version=True,
-                )
-                item_data["Oneg1A_Opos2A_restricted"] = blocks_Oneg1A_Opos2A_restricted
-                print("blocks_Oneg1A_Opos2A_restricted is DONE!")
+                    # blocks_Oneg1A_Opos1B_also_view = Oneg1A_Opos1B(
+                    #     item,
+                    #     retrieved_items_with_review,
+                    #     wrong_aspects,
+                    #     correct_forms,
+                    #     Oneg1A_list,
+                    #     Opos1B_list,
+                    #     dict_AspectSentiment,
+                    #     metaData_for_cellPhones,
+                    #     retrieved=False,
+                    #     also_view=True,
+                    # )
+                    # item_data["Oneg1A_Opos1B_also_view"] = blocks_Oneg1A_Opos1B_also_view
+                    # print("blocks_Oneg1A_Opos1B_also_view is DONE!")
 
-                blocks_Oneg1A_Opos2A_unrestricted = Oneg1A_Opos2A(
-                    item,
-                    wrong_aspects,
-                    correct_forms,
-                    Oneg1A_list,
-                    Opos2A_list,
-                    dict_AspectSentiment,
-                    restricted_version=False,
-                )
-                item_data["Oneg1A_Opos2A_unrestricted"] = (
-                    blocks_Oneg1A_Opos2A_unrestricted
-                )
-                print("blocks_Oneg1A_Opos2A_unrestricted is DONE!")
+                    # blocks_Oneg1A_Opos2A_restricted = Oneg1A_Opos2A(
+                    #     item,
+                    #     wrong_aspects,
+                    #     correct_forms,
+                    #     Oneg1A_list,
+                    #     Opos2A_list,
+                    #     dict_AspectSentiment,
+                    #     restricted_version=True,
+                    # )
+                    # item_data["Oneg1A_Opos2A_restricted"] = blocks_Oneg1A_Opos2A_restricted
+                    # print("blocks_Oneg1A_Opos2A_restricted is DONE!")
 
-                # Append the processed data for the current item directly to the pickle file
-                append_to_pickle(processed_data_pkl_path, {str(item): item_data})
-                counter += 1
+                    # blocks_Oneg1A_Opos2A_unrestricted = Oneg1A_Opos2A(
+                    #     item,
+                    #     wrong_aspects,
+                    #     correct_forms,
+                    #     Oneg1A_list,
+                    #     Opos2A_list,
+                    #     dict_AspectSentiment,
+                    #     restricted_version=False,
+                    # )
+                    # item_data["Oneg1A_Opos2A_unrestricted"] = (
+                    #     blocks_Oneg1A_Opos2A_unrestricted
+                    # )
+                    # print("blocks_Oneg1A_Opos2A_unrestricted is DONE!")
 
-                # Save progress for done_items_neg.pkl every 10 items
-                # if counter % save_interval == 0:
-                #     with open(done_items_pkl_path, "wb") as fp:
-                #         pickle.dump(done_items_neg, fp, protocol=4)
-                #     print(f"Progress saved after processing {counter} items.")
+                    # Incremental writing to avoid memory overload
+                    all_item_data[str(item)] = item_data
 
-                # Free memory after processing each item
-                del item_data
+                    # Update pickle after every 10 items to ensure progress is saved
+                    if len(done_items_neg) % save_interval == 0:
+                        with open('./done_items_neg.json', 'w') as fp:
+                            json.dump(done_items_neg, fp)
+                        print(f"Progress saved after processing {len(done_items_neg)} items.")
 
-# # Final save for done_items_neg.pkl
-# with open(done_items_pkl_path, "wb") as fp:
-#     pickle.dump(done_items_neg, fp, protocol=4)
+                    # Free memory by removing item_data from RAM after it’s written to disk
+                    del item_data
 
-# print("Final progress saved!")
+# Write all item data to JSON once at the end
+with open('./100_blocks_neg.json', 'w') as f:
+    json.dump(all_item_data, f)
+
+# Final save for done_items_neg.pkl
+with open(done_items_pkl_path, "wb") as fp:
+    pickle.dump(done_items_neg, fp, protocol=4)
 
 print("Final progress saved!")
+
