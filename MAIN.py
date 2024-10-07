@@ -400,29 +400,29 @@ pprint.pprint(Cell_Phones_df.head())
 
 
 # Adding numnber of reviews
-if not os.path.exists("./metaData_for_cellPhones.pkl"):
-    reviews_for_cellPhones = df_review_raw_cellPhones.loc[
-        df_review_raw_cellPhones["asin"].isin(Cell_Phones_df.asin.unique())
-    ]
-    df_asin_numReviews = pd.DataFrame()
-    df_asin_numReviews["asin"] = (
-        reviews_for_cellPhones.groupby(by="asin").count()[["text"]].index
-    )
-    df_asin_numReviews["num_reviews"] = (
-        reviews_for_cellPhones.groupby(by="asin").count()[["text"]].text.values
-    )
+#if not os.path.exists("./metaData_for_cellPhones.pkl"):
+reviews_for_cellPhones = df_review_raw_cellPhones.loc[
+    df_review_raw_cellPhones["asin"].isin(Cell_Phones_df.asin.unique())
+]
+df_asin_numReviews = pd.DataFrame()
+df_asin_numReviews["asin"] = (
+    reviews_for_cellPhones.groupby(by="asin").count()[["text"]].index
+)
+df_asin_numReviews["num_reviews"] = (
+    reviews_for_cellPhones.groupby(by="asin").count()[["text"]].text.values
+)
 
-    metaData_for_cellPhones = Cell_Phones_df.merge(
-        df_asin_numReviews, on="asin", how="outer"
-    )
-    metaData_for_cellPhones.fillna(value=0, inplace=True)
+metaData_for_cellPhones = Cell_Phones_df.merge(
+    df_asin_numReviews, on="asin", how="outer"
+)
+metaData_for_cellPhones.fillna(value=0, inplace=True)
 
-    metaData_for_cellPhones.head(3)
+metaData_for_cellPhones.head(3)
 
-    with open("./metaData_for_cellPhones.pkl", "wb") as fp:
-        pickle.dump(metaData_for_cellPhones, fp, protocol=4)
-else:
-    print("MIL GAYA")
+with open("./metaData_for_cellPhones.pkl", "wb") as fp:
+    pickle.dump(metaData_for_cellPhones, fp, protocol=4)
+# else:
+#     print("MIL GAYA")
 
 
 def cleaning_process(text):
@@ -452,40 +452,41 @@ def cleaning_process(text):
     return cleaned_text
 
 
-if not os.path.exists("./reviews_wholeReview.txt"):
+# if not os.path.exists("./reviews_wholeReview.txt"):
     # @Vahid: Could we use the columns:Summary and Voting, somehow?
-    reviews_for_cellPhones_df = df_review_raw_cellPhones.loc[
-        df_review_raw_cellPhones["asin"].isin(Cell_Phones_df.asin.unique())
-    ]
-    reviews_for_cellPhones_df = reviews_for_cellPhones_df.dropna(
-        axis=0, subset=["text"]
-    )
+reviews_for_cellPhones_df = df_review_raw_cellPhones.loc[
+    df_review_raw_cellPhones["asin"].isin(Cell_Phones_df.asin.unique())
+]
+reviews_for_cellPhones_df = reviews_for_cellPhones_df.dropna(
+    axis=0, subset=["text"]
+)
 
-    # Clean reviews and create a text file for all reviews
-    cellPhone_reviews = reviews_for_cellPhones_df.text
-    cellPhone_reviews_cleaned = cellPhone_reviews.apply(cleaning_process)
+# Clean reviews and create a text file for all reviews
+cellPhone_reviews = reviews_for_cellPhones_df.text
+cellPhone_reviews_cleaned = cellPhone_reviews.apply(cleaning_process)
 
-    reviews_for_cellPhones_df_cleaned = reviews_for_cellPhones_df.copy()
-    reviews_for_cellPhones_df_cleaned["text"] = cellPhone_reviews_cleaned.values
+reviews_for_cellPhones_df_cleaned = reviews_for_cellPhones_df.copy()
+reviews_for_cellPhones_df_cleaned["text"] = cellPhone_reviews_cleaned.values
 
-    wholeReview_reviews_for_cellPhones_df = pd.DataFrame()
-    wholeReview_reviews_for_cellPhones_df["Index"] = reviews_for_cellPhones_df_cleaned[
-        ["asin", "user_id"]
-    ].apply(lambda x: "_".join(x), axis=1)
-    wholeReview_reviews_for_cellPhones_df["text"] = (
-        reviews_for_cellPhones_df_cleaned.text.values
-    )
-    wholeReview_reviews_for_cellPhones_df = (
-        wholeReview_reviews_for_cellPhones_df.dropna(axis=0, subset=["text"])
-    )
+wholeReview_reviews_for_cellPhones_df = pd.DataFrame()
+wholeReview_reviews_for_cellPhones_df["Index"] = reviews_for_cellPhones_df_cleaned[
+    ["asin", "user_id"]
+].apply(lambda x: "_".join(x), axis=1)
+wholeReview_reviews_for_cellPhones_df["text"] = (
+    reviews_for_cellPhones_df_cleaned.text.values
+)
+wholeReview_reviews_for_cellPhones_df = (
+    wholeReview_reviews_for_cellPhones_df.dropna(axis=0, subset=["text"])
+)
 
-    reviews_for_cellPhones_df_cleaned.to_csv("./reviews_for_cellPhones_df_cleaned.csv")
+reviews_for_cellPhones_df_cleaned.to_csv("./reviews_for_cellPhones_df_cleaned.csv")
+print("reviews_for_cellPhones_df_cleaned.csv saved")
 
-    with open("./reviews_wholeReview.txt", "w") as f:
-        for review in cellPhone_reviews_cleaned.values:
-            _ = f.write(review + "\n")
-else:
-    print("reviews_wholeReview.txt mil gaya")
+with open("./reviews_wholeReview.txt", "w") as f:
+    for review in cellPhone_reviews_cleaned.values:
+        _ = f.write(review + "\n")
+# else:
+#     print("reviews_wholeReview.txt mil gaya")
 
 brand_list = list(Cell_Phones_df.brand.unique())
 print("brand_list: ")
@@ -605,5 +606,6 @@ for k1, v1 in list(all_combinations_dict.items()):
 
 with open("./retrieved_items_dict.json", "w") as f:
     json.dump(retrieved_items_dict, f)
+    print("retrieved_items_dict.json saved")
 # else:
 #     print("mil gaya ./retrieved_items_dict.json")

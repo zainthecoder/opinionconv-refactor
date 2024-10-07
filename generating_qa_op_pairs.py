@@ -724,24 +724,9 @@ def Oneg1A_Opos2A(
                                         }
     return blocks
 
-import json
+
 done_items_neg = []
-all_item_data = {}
-
-save_interval = 10  # Save after every 10 items
-counter = 0  # Counter to track how many items have been processed since the last save
-
-# Paths for saving files
-done_items_pkl_path = "./done_items_neg.json"
-processed_data_pkl_path = "./100_blocks_neg.json"
-
-# Load previous progress for done_items_neg if available
-try:
-    with open(done_items_pkl_path, "r") as fp:
-        done_items_neg = json.load(fp)
-except (FileNotFoundError, EOFError):
-    done_items_neg = []
-
+all_blocks_neg = {}
 
 for index in list(retrieved_items_dict.keys()):
     print(str(index))
@@ -759,12 +744,12 @@ for index in list(retrieved_items_dict.keys()):
                 if item:
                     done_items_neg.append(item)
                     print(item)
-                    item_data = {}
 
+                    all_blocks_neg[str(item)] = {}
                     blocks_Qpos1A_Apos1A = Qpos1A_Apos1A(
                         item, wrong_aspects, correct_forms, Q1A_list, dict_AspectSentiment
                     )
-                    item_data["Qpos1A_Apos1A"] = blocks_Qpos1A_Apos1A
+                    all_blocks_neg[str(item)]['Qpos1A_Apos1A'] = blocks_Qpos1A_Apos1A
                     print("blocks_Qpos1A_Apos1A is DONE!")
 
                     blocks_Oneg1A_Opos1A = Oneg1A_Opos1A(
@@ -775,7 +760,7 @@ for index in list(retrieved_items_dict.keys()):
                         Opos1A_list,
                         dict_AspectSentiment,
                     )
-                    item_data["Oneg1A_Opos1A"] = blocks_Oneg1A_Opos1A
+                    all_blocks_neg[str(item)]['Oneg1A_Opos1A'] = blocks_Oneg1A_Opos1A
                     print("blocks_Oneg1A_Opos1A is DONE!")
 
                     # blocks_Oneg1A_Opos1B_retrieved = Oneg1A_Opos1B(
@@ -836,22 +821,13 @@ for index in list(retrieved_items_dict.keys()):
 
                     # Incremental writing to avoid memory overload
                     all_item_data[str(item)] = item_data
-
-                    # Update pickle after every 10 items to ensure progress is saved
-                    if len(done_items_neg) % save_interval == 0:
-                        with open('./done_items_neg.json', 'w') as fp:
-                            json.dump(done_items_neg, fp)
-                        print(f"Progress saved after processing {len(done_items_neg)} items.")
-
                     # Free memory by removing item_data from RAM after it’s written to disk
                     del item_data
 
-# Write all item data to JSON once at the end
 with open('./100_blocks_neg.json', 'w') as f:
-    json.dump(all_item_data, f)
+    json.dump(all_blocks_neg, f)
 
-# Final save for done_items_neg.pkl
-with open(done_items_pkl_path, "wb") as fp:
+with open('./done_items_neg.pkl', 'wb') as fp:
     pickle.dump(done_items_neg, fp, protocol=4)
 
 print("Final progress saved!")
