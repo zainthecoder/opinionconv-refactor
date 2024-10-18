@@ -94,14 +94,15 @@ final_reviews_for_cellPhones_punctuated.csv
 Output:
 final_reviews_after_absa.json
 
-Step 4: Transform Data Schema
+Step 4: Transform Data Schema Run transform_absa_for_rag.py
 Convert final_reviews_after_absa.json into the required schema.
 
 Input:
 final_reviews_after_absa.json
 
 Output:
-transformed_data.json
+transformed_data_for_100_blocks_neg.json
+transformed_data_for_vector_database.json
 
 
 Step 5: Run generating_qa_op_pairs.py
