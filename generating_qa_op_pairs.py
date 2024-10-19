@@ -316,7 +316,7 @@ def Oneg1A_Opos1A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos1A_list, 
                                 blocks["Oneg1A_Opos1A_" + str(counter)]['Oneg1A']['Opinion'] = Oneg1A
                                 blocks["Oneg1A_Opos1A_" + str(counter)]['Oneg1A']['Labels'] = {}
                                 blocks["Oneg1A_Opos1A_" + str(counter)]['Oneg1A']['Labels']['Key'] = key
-                                print(key)
+                                #print(key)
                                 blocks["Oneg1A_Opos1A_" + str(counter)]['Oneg1A']['Labels']['Aspect'] = aspect
                                 blocks["Oneg1A_Opos1A_" + str(counter)]['Oneg1A']['Labels']['Polarity'] = str(polarity).lower()
 
@@ -324,7 +324,7 @@ def Oneg1A_Opos1A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos1A_list, 
                                 blocks["Oneg1A_Opos1A_" + str(counter)]['Opos1A']['Opinion'] = Opos1A
                                 blocks["Oneg1A_Opos1A_" + str(counter)]['Opos1A']['Labels'] = {}
                                 blocks["Oneg1A_Opos1A_" + str(counter)]['Opos1A']['Labels']['Key'] = key_
-                                print(key)
+                                #print(key)
                                 blocks["Oneg1A_Opos1A_" + str(counter)]['Opos1A']['Labels']['Aspect'] = aspect_
                                 blocks["Oneg1A_Opos1A_" + str(counter)]['Opos1A']['Labels']['Polarity'] = str(polarity_).lower()
     return(blocks)
@@ -406,12 +406,16 @@ def Oneg1A_Opos1B(item, retrieved_items, wrong_aspects, correct_forms, Oneg1A_li
                                         blocks["Oneg1A_Opos1B_" + str(counter)]['Oneg1A']['Opinion'] = Oneg1A
                                         blocks["Oneg1A_Opos1B_" + str(counter)]['Oneg1A']['Labels'] = {}
                                         blocks["Oneg1A_Opos1B_" + str(counter)]['Oneg1A']['Labels']['Key'] = item_1_key
-                                        print("Oneg1A_Opos1B_: key",item_1_key)
+                                        #print("Oneg1A_Opos1B_: key",item_1_key)
                                         blocks["Oneg1A_Opos1B_" + str(counter)]['Oneg1A']['Labels']['Aspect'] = item_1_aspect
                                         blocks["Oneg1A_Opos1B_" + str(counter)]['Oneg1A']['Labels']['Polarity'] = str(item_1_polarity).lower()
-                                        blocks["Oneg1A_Opos1B_" + str(counter)]['Oneg1A']['Labels']['bought_together'] = DF.query("asin == @item_1_key").bought_together.values[0] if DF.query("asin == @item_1_key").bought_together.values.size > 0 else []
+                                        # x=item_1_review_sentiment["asin"]
+                                        blocks["Oneg1A_Opos1B_" + str(counter)]['Oneg1A']['Labels']['bought_together'] = []
 
-
+                                        # print("zainzain")
+                                        # print("\n##")
+                                        # print(metaData_for_cellPhones.query("asin == @x").bought_together.values)
+                                        # print("##\n")
                                         blocks["Oneg1A_Opos1B_" + str(counter)]['Opos1B'] = {}
                                         blocks["Oneg1A_Opos1B_" + str(counter)]['Opos1B']['Opinion'] = Opos1B
                                         blocks["Oneg1A_Opos1B_" + str(counter)]['Opos1B']['Labels'] = {}
@@ -489,7 +493,7 @@ def Oneg1A_Opos2A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos2A_list, 
                                         blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A']['Opinion'] = Oneg1A
                                         blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A']['Labels'] = {}
                                         blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A']['Labels']['Key'] = key
-                                        print("Oneg1A_Opos2A Key: ",key)
+                                        #print("Oneg1A_Opos2A Key: ",key)
                                         blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A']['Labels']['Aspect'] = aspect
                                         blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A']['Labels']['Polarity'] = str(polarity).lower()
 
@@ -555,7 +559,7 @@ for index, retrieved_items_1 in get_items_generator():
 
                     all_blocks_neg[str(item)] = {}
 
-                    # Process different blocks
+                    #Process different blocks
                     blocks_Qpos1A_Apos1A = Qpos1A_Apos1A(
                         item, wrong_aspects, correct_forms, Q1A_list, dict_AspectSentiment
                     )
@@ -627,9 +631,9 @@ for index, retrieved_items_1 in get_items_generator():
                     all_blocks_neg[str(item)]["Oneg1A_Opos2A_unrestricted"] = blocks_Oneg1A_Opos2A_unrestricted
                     print("blocks_Oneg1A_Opos2A_unrestricted is DONE!")
 
-                    # Save the result after processing each item
-                    with open('./100_blocks_neg.json', 'a') as f:
+                    with open('./100_blocks_neg.jsonl', 'a') as f:
                         json.dump(all_blocks_neg, f)
+                        f.write('\n')
 
                     with open('./done_items_neg.pkl', 'wb') as fp:
                         pickle.dump(done_items_neg, fp, protocol=4)
