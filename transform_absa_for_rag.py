@@ -25,24 +25,30 @@ for entry in orignal_data:
         pass
     else:
         for i in range(max_len):
+            key = generate()
             new_entry = entry.copy()
             new_entry["aspect"] = aspects[i]
             new_entry["sentiment"] = sentiments[i]
+            new_entry["unique_key"] = key
             orignal_data_with_single_aspect.append(new_entry)
 
 #pp.pp(orignal_data_with_single_aspect)
+
+# Save the transformed_data_for_rag
+with open('transformed_data_for_vector_database.json', 'w') as json_file:
+    json.dump(orignal_data_with_single_aspect, json_file)
+
 
 # Group transformed entries by 'asin' and generate unique keys
 transformed_data = {}
 for entry in orignal_data_with_single_aspect:
     asin = entry['asin']
-    key = generate()
     
     if asin not in transformed_data:
         transformed_data[asin] = []
     
     transformed_data[asin].append({
-        key: {
+        entry["unique_key"]: {
             "sentence": entry["sentence"],
             "aspect": entry["aspect"],
             "sentiment": entry["sentiment"],
@@ -53,7 +59,7 @@ for entry in orignal_data_with_single_aspect:
 
 #pp.pp(transformed_data)
 # Save the transformed data to a JSON file
-with open('transformed_data.json', 'w') as json_file:
+with open('transformed_data_for_100_blocks.json', 'w') as json_file:
     json.dump(transformed_data, json_file)
 
 print("Data transformation complete and saved to transformed_data.json")

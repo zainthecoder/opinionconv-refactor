@@ -168,7 +168,7 @@ subset = [
     "parent_asin",
     "bought_together",
     "subtitle",
-    "author",
+    "author"
 ]
 
 

@@ -12,14 +12,13 @@ metaData_for_cellPhones = pd.read_pickle(
 wrong_aspects_3 = pd.read_pickle("./wrong_aspects_3.pkl")
 
 # Path to the input JSON file
-input_file = "transformed_data.json"
+input_file = "transformed_data_for_100_blocks.json"
 
 # Read the JSON file
 with open(input_file, "r") as f:
     dict_AspectSentiment = json.load(f)
 
 
-# add //"B01N6NTIRH", B07D3QKRW1,  B07D3QKRW1, B08FL1N9V3
 with open("./retrieved_items_dict.json") as f:  # source: MAIN.py
     retrieved_items_dict = json.load(f)
 retrieved_items_dict
@@ -286,7 +285,13 @@ def Oneg1A_Opos1A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos1A_list, 
 
         for review_dict in item_review_list:
             for item_reviewer_aspect_key, review_sentiment in (review_dict.items()):
-                key = item_reviewer_aspect_key[0]
+                key = (
+                    review_sentiment["asin"]
+                    + "_"
+                    + review_sentiment["user_id"]
+                    + "_"
+                    + item_reviewer_aspect_key
+                )
                 aspect = review_sentiment["aspect"]
                 review = review_sentiment['sentence']
                 review = cleaning_review(review)
@@ -311,6 +316,7 @@ def Oneg1A_Opos1A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos1A_list, 
                                 blocks["Oneg1A_Opos1A_" + str(counter)]['Oneg1A']['Opinion'] = Oneg1A
                                 blocks["Oneg1A_Opos1A_" + str(counter)]['Oneg1A']['Labels'] = {}
                                 blocks["Oneg1A_Opos1A_" + str(counter)]['Oneg1A']['Labels']['Key'] = key
+                                print(key)
                                 blocks["Oneg1A_Opos1A_" + str(counter)]['Oneg1A']['Labels']['Aspect'] = aspect
                                 blocks["Oneg1A_Opos1A_" + str(counter)]['Oneg1A']['Labels']['Polarity'] = str(polarity).lower()
 
@@ -318,6 +324,7 @@ def Oneg1A_Opos1A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos1A_list, 
                                 blocks["Oneg1A_Opos1A_" + str(counter)]['Opos1A']['Opinion'] = Opos1A
                                 blocks["Oneg1A_Opos1A_" + str(counter)]['Opos1A']['Labels'] = {}
                                 blocks["Oneg1A_Opos1A_" + str(counter)]['Opos1A']['Labels']['Key'] = key_
+                                print(key)
                                 blocks["Oneg1A_Opos1A_" + str(counter)]['Opos1A']['Labels']['Aspect'] = aspect_
                                 blocks["Oneg1A_Opos1A_" + str(counter)]['Opos1A']['Labels']['Polarity'] = str(polarity_).lower()
     return(blocks)
@@ -399,6 +406,7 @@ def Oneg1A_Opos1B(item, retrieved_items, wrong_aspects, correct_forms, Oneg1A_li
                                         blocks["Oneg1A_Opos1B_" + str(counter)]['Oneg1A']['Opinion'] = Oneg1A
                                         blocks["Oneg1A_Opos1B_" + str(counter)]['Oneg1A']['Labels'] = {}
                                         blocks["Oneg1A_Opos1B_" + str(counter)]['Oneg1A']['Labels']['Key'] = item_1_key
+                                        print("Oneg1A_Opos1B_: key",item_1_key)
                                         blocks["Oneg1A_Opos1B_" + str(counter)]['Oneg1A']['Labels']['Aspect'] = item_1_aspect
                                         blocks["Oneg1A_Opos1B_" + str(counter)]['Oneg1A']['Labels']['Polarity'] = str(item_1_polarity).lower()
                                         blocks["Oneg1A_Opos1B_" + str(counter)]['Oneg1A']['Labels']['bought_together'] = DF.query("asin == @item_1_key").bought_together.values[0] if DF.query("asin == @item_1_key").bought_together.values.size > 0 else []
@@ -422,7 +430,13 @@ def Oneg1A_Opos2A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos2A_list, 
     if item_review_list:
         for review_dict in item_review_list:
             for item_reviewer_aspect_key, review_sentiment in (review_dict.items()):
-                key = item_reviewer_aspect_key[0]
+                key = (
+                    review_sentiment["asin"]
+                    + "_"
+                    + review_sentiment["user_id"]
+                    + "_"
+                    + item_reviewer_aspect_key
+                )
                 aspect = review_sentiment["aspect"]
                 aspect = cleaning_aspect(aspect)
                 review = review_sentiment['sentence']
@@ -434,7 +448,13 @@ def Oneg1A_Opos2A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos2A_list, 
 
         for review_dict in item_review_list:
             for item_reviewer_aspect_key, review_sentiment in (review_dict.items()):
-                key = item_reviewer_aspect_key[0]
+                key = (
+                    review_sentiment["asin"]
+                    + "_"
+                    + review_sentiment["user_id"]
+                    + "_"
+                    + item_reviewer_aspect_key
+                )
                 aspect = review_sentiment["aspect"]
                 aspect = cleaning_aspect(aspect)
                 review = review_sentiment['sentence']
@@ -469,6 +489,7 @@ def Oneg1A_Opos2A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos2A_list, 
                                         blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A']['Opinion'] = Oneg1A
                                         blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A']['Labels'] = {}
                                         blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A']['Labels']['Key'] = key
+                                        print("Oneg1A_Opos2A Key: ",key)
                                         blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A']['Labels']['Aspect'] = aspect
                                         blocks["Oneg1A_Opos2A_" + str(counter)]['Oneg1A']['Labels']['Polarity'] = str(polarity).lower()
 
@@ -607,7 +628,7 @@ for index, retrieved_items_1 in get_items_generator():
                     print("blocks_Oneg1A_Opos2A_unrestricted is DONE!")
 
                     # Save the result after processing each item
-                    with open('./100_blocks_neg.json', 'w') as f:
+                    with open('./100_blocks_neg.json', 'a') as f:
                         json.dump(all_blocks_neg, f)
 
                     with open('./done_items_neg.pkl', 'wb') as fp:
