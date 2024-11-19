@@ -1,8 +1,8 @@
+datasets
 pandas
 joblib
 textstat
 matplotlib
-spacy
-nltk
 pyabsa
 rpunct
+datasets

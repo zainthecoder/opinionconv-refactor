@@ -147,3 +147,15 @@ Output:
 
 
 
+- Bender (HPC)
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+bash miniconda.sh -b -p $HOME/miniconda
+echo 'export PATH=$HOME/miniconda/bin:$PATH' >> ~/.bashrc
+source ~/.bashrc
+conda --version
+conda create -n myenv python=3.10 numpy scipy
+conda create --name hpc_env python=3.9
+
+conda activate myenv
+
+source ~/.bashrc 

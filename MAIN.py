@@ -1,36 +1,12 @@
-import cudf
-
 import pandas as pd
 import numpy as np
-import gzip
 import json
-import os
-import random
 import re
 import itertools
-import glob
-import string
-from joblib import load
 import pickle
 import logging
 import copy
-import textstat
 import pprint
-
-
-import matplotlib.pyplot as plt
-
-import spacy
-
-nlp_spacy = spacy.load("en_core_web_trf")
-
-import nltk
-
-# nltk.download('stopwords')
-# nltk.download('punkt')
-
-# from nltk.corpus import stopwords
-# stop_words = set(stopwords.words('english'))
 
 import pprint
 import datasets
@@ -66,9 +42,6 @@ df_metaData_raw_cellPhones = df_metaData_raw_cellPhones.to_pandas()
 df_metaData_raw_cellPhones["brand"] = df_metaData_raw_cellPhones["details"].apply(
     extract_brand
 )
-
-# print(df_metaData_raw_cellPhones[['details', 'brand']])
-
 # Reviews
 
 
