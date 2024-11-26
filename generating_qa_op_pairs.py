@@ -527,118 +527,167 @@ def Oneg1A_Opos2A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos2A_list, 
                                     blocks["Oneg1A_Opos2A_" + str(counter)]['Opos2A']['Labels']['Polarity'] = str(polarity_).lower()
                                     
     return(blocks)
-import json
-import pickle
-import gc  # Garbage collection for memory management
+
 
 done_items_neg = []
 all_blocks_neg = {}
 
-# Generator function to yield items one at a time
-def get_items_generator():
-    for index in retrieved_items_dict.keys():
-        yield index, retrieved_items_dict[str(index)].get("retrieved items")
-
-# Process one item at a time
-for index, retrieved_items_1 in get_items_generator():
+for index in list(retrieved_items_dict.keys()):
     print(str(index))
-
-    # Filter retrieved items that have reviews
-    retrieved_items_with_review = [
-        i for i in retrieved_items_1
-        if metaData_for_cellPhones.query("asin == @i").num_reviews.values[0] > 0
-    ]
-
+    retrieved_items_1 = retrieved_items_dict[str(index)].get("retrieved items")
+    retrieved_items_with_review = [i for i in retrieved_items_1 if metaData_for_cellPhones.query("asin == @i").num_reviews.values[0] > 0]
+    print('retrieved_items_with_review:', retrieved_items_with_review)
     if len(retrieved_items_with_review) > 0:
         for item in retrieved_items_with_review:
             if item not in done_items_neg:
-                if item:
-                    done_items_neg.append(item)
-                    print(item)
+                done_items_neg.append(item)
+                print(item)
+                all_blocks_neg[str(item)] = {}
+                blocks_Qpos1A_Apos1A = Qpos1A_Apos1A(item, wrong_aspects, correct_forms, Q1A_list, dict_AspectSentiment)
+                all_blocks_neg[str(item)]['Qpos1A_Apos1A'] = blocks_Qpos1A_Apos1A
+                print("blocks_Qpos1A_Apos1A is DONE!")
+                
+                blocks_Oneg1A_Opos1A = Oneg1A_Opos1A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos1A_list, dict_AspectSentiment)
+                all_blocks_neg[str(item)]['Oneg1A_Opos1A'] = blocks_Oneg1A_Opos1A
+                print("blocks_Oneg1A_Opos1A is DONE!")
 
-                    all_blocks_neg[str(item)] = {}
+                blocks_Oneg1A_Opos1B_retrieved = Oneg1A_Opos1B(item, retrieved_items_with_review, wrong_aspects, correct_forms, Oneg1A_list, Opos1B_list,
+                                                     dict_AspectSentiment, metaData_for_cellPhones, retrieved=True, bought_together=False)
+                all_blocks_neg[str(item)]['Oneg1A_Opos1B_retrieved'] = blocks_Oneg1A_Opos1B_retrieved
+                print("blocks_Oneg1A_Opos1B_retrieved is DONE!")
 
-                    #Process different blocks
-                    blocks_Qpos1A_Apos1A = Qpos1A_Apos1A(
-                        item, wrong_aspects, correct_forms, Q1A_list, dict_AspectSentiment
-                    )
-                    all_blocks_neg[str(item)]['Qpos1A_Apos1A'] = blocks_Qpos1A_Apos1A
-                    print("blocks_Qpos1A_Apos1A is DONE!")
+                blocks_Oneg1A_Opos1B_also_view = Oneg1A_Opos1B(item, retrieved_items_with_review, wrong_aspects, correct_forms, Oneg1A_list, Opos1B_list,
+                                                     dict_AspectSentiment, metaData_for_cellPhones, retrieved=False, bought_together=True)
+                all_blocks_neg[str(item)]['Oneg1A_Opos1B_also_view'] = blocks_Oneg1A_Opos1B_also_view
+                print("blocks_Oneg1A_Opos1B_also_view is DONE!")
 
-                    blocks_Oneg1A_Opos1A = Oneg1A_Opos1A(
-                        item,
-                        wrong_aspects,
-                        correct_forms,
-                        Oneg1A_list,
-                        Opos1A_list,
-                        dict_AspectSentiment,
-                    )
-                    all_blocks_neg[str(item)]['Oneg1A_Opos1A'] = blocks_Oneg1A_Opos1A
-                    print("blocks_Oneg1A_Opos1A is DONE!")
+                blocks_Oneg1A_Opos2A_restricted = Oneg1A_Opos2A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos2A_list,
+                                                    dict_AspectSentiment, restricted_version=True)
+                all_blocks_neg[str(item)]['Oneg1A_Opos2A_restricted'] = blocks_Oneg1A_Opos2A_restricted
+                print("blocks_Oneg1A_Opos2A_restricted is DONE!")
+                
+                blocks_Oneg1A_Opos2A_unrestricted = Oneg1A_Opos2A(item, wrong_aspects, correct_forms, Oneg1A_list, Opos2A_list,
+                                                                  dict_AspectSentiment, restricted_version=False)
+                all_blocks_neg[str(item)]['Oneg1A_Opos2A_unrestricted'] = blocks_Oneg1A_Opos2A_unrestricted
+                print("blocks_Oneg1A_Opos2A_unrestricted is DONE!")
 
-                    blocks_Oneg1A_Opos1B_retrieved = Oneg1A_Opos1B(
-                        item,
-                        retrieved_items_with_review,
-                        wrong_aspects,
-                        correct_forms,
-                        Oneg1A_list,
-                        Opos1B_list,
-                        dict_AspectSentiment,
-                        metaData_for_cellPhones,
-                        retrieved=True,
-                        bought_together=False,
-                    )
-                    all_blocks_neg[str(item)]["Oneg1A_Opos1B_retrieved"] = blocks_Oneg1A_Opos1B_retrieved
-                    print("blocks_Oneg1A_Opos1B_retrieved is DONE!")
+with open('./100_blocks_neg.json', 'w') as f:
+    json.dump(all_blocks_neg, f)
 
-                    blocks_Oneg1A_Opos1B_bought_together = Oneg1A_Opos1B(
-                        item,
-                        retrieved_items_with_review,
-                        wrong_aspects,
-                        correct_forms,
-                        Oneg1A_list,
-                        Opos1B_list,
-                        dict_AspectSentiment,
-                        metaData_for_cellPhones,
-                        retrieved=False,
-                        bought_together=True,
-                    )
-                    all_blocks_neg[str(item)]["Oneg1A_Opos1B_bought_together"] = blocks_Oneg1A_Opos1B_bought_together
-                    print("blocks_Oneg1A_Opos1B_bought_together is DONE!")
+with open('./done_items_neg.pkl', 'wb') as fp:
+    pickle.dump(done_items_neg, fp, protocol=4)
+# import json
+# import pickle
+# import gc  # Garbage collection for memory management
 
-                    blocks_Oneg1A_Opos2A_restricted = Oneg1A_Opos2A(
-                        item,
-                        wrong_aspects,
-                        correct_forms,
-                        Oneg1A_list,
-                        Opos2A_list,
-                        dict_AspectSentiment,
-                        restricted_version=True,
-                    )
-                    all_blocks_neg[str(item)]["Oneg1A_Opos2A_restricted"] = blocks_Oneg1A_Opos2A_restricted
-                    print("blocks_Oneg1A_Opos2A_restricted is DONE!")
+# done_items_neg = []
+# all_blocks_neg = {}
 
-                    blocks_Oneg1A_Opos2A_unrestricted = Oneg1A_Opos2A(
-                        item,
-                        wrong_aspects,
-                        correct_forms,
-                        Oneg1A_list,
-                        Opos2A_list,
-                        dict_AspectSentiment,
-                        restricted_version=False,
-                    )
-                    all_blocks_neg[str(item)]["Oneg1A_Opos2A_unrestricted"] = blocks_Oneg1A_Opos2A_unrestricted
-                    print("blocks_Oneg1A_Opos2A_unrestricted is DONE!")
+# # Generator function to yield items one at a time
+# def get_items_generator():
+#     for index in retrieved_items_dict.keys():
+#         yield index, retrieved_items_dict[str(index)].get("retrieved items")
 
-                    with open('./100_blocks_neg.jsonl', 'a') as f:
-                        json.dump(all_blocks_neg, f)
-                        f.write('\n')
+# # Process one item at a time
+# for index, retrieved_items_1 in get_items_generator():
+#     print(str(index))
 
-                    with open('./done_items_neg.pkl', 'wb') as fp:
-                        pickle.dump(done_items_neg, fp, protocol=4)
+#     # Filter retrieved items that have reviews
+#     retrieved_items_with_review = [
+#         i for i in retrieved_items_1
+#         if metaData_for_cellPhones.query("asin == @i").num_reviews.values[0] > 0
+#     ]
 
-                    # Clear memory and force garbage collection after each item
-                    all_blocks_neg.clear()
-                    gc.collect()
+#     if len(retrieved_items_with_review) > 0:
+#         for item in retrieved_items_with_review:
+#             if item not in done_items_neg:
+#                 if item:
+#                     done_items_neg.append(item)
+#                     print(item)
 
-print("Final progress saved!")
+#                     all_blocks_neg[str(item)] = {}
+
+#                     #Process different blocks
+#                     blocks_Qpos1A_Apos1A = Qpos1A_Apos1A(
+#                         item, wrong_aspects, correct_forms, Q1A_list, dict_AspectSentiment
+#                     )
+#                     all_blocks_neg[str(item)]['Qpos1A_Apos1A'] = blocks_Qpos1A_Apos1A
+#                     print("blocks_Qpos1A_Apos1A is DONE!")
+
+#                     blocks_Oneg1A_Opos1A = Oneg1A_Opos1A(
+#                         item,
+#                         wrong_aspects,
+#                         correct_forms,
+#                         Oneg1A_list,
+#                         Opos1A_list,
+#                         dict_AspectSentiment,
+#                     )
+#                     all_blocks_neg[str(item)]['Oneg1A_Opos1A'] = blocks_Oneg1A_Opos1A
+#                     print("blocks_Oneg1A_Opos1A is DONE!")
+
+#                     blocks_Oneg1A_Opos1B_retrieved = Oneg1A_Opos1B(
+#                         item,
+#                         retrieved_items_with_review,
+#                         wrong_aspects,
+#                         correct_forms,
+#                         Oneg1A_list,
+#                         Opos1B_list,
+#                         dict_AspectSentiment,
+#                         metaData_for_cellPhones,
+#                         retrieved=True,
+#                         bought_together=False,
+#                     )
+#                     all_blocks_neg[str(item)]["Oneg1A_Opos1B_retrieved"] = blocks_Oneg1A_Opos1B_retrieved
+#                     print("blocks_Oneg1A_Opos1B_retrieved is DONE!")
+
+#                     blocks_Oneg1A_Opos1B_bought_together = Oneg1A_Opos1B(
+#                         item,
+#                         retrieved_items_with_review,
+#                         wrong_aspects,
+#                         correct_forms,
+#                         Oneg1A_list,
+#                         Opos1B_list,
+#                         dict_AspectSentiment,
+#                         metaData_for_cellPhones,
+#                         retrieved=False,
+#                         bought_together=True,
+#                     )
+#                     all_blocks_neg[str(item)]["Oneg1A_Opos1B_bought_together"] = blocks_Oneg1A_Opos1B_bought_together
+#                     print("blocks_Oneg1A_Opos1B_bought_together is DONE!")
+
+#                     blocks_Oneg1A_Opos2A_restricted = Oneg1A_Opos2A(
+#                         item,
+#                         wrong_aspects,
+#                         correct_forms,
+#                         Oneg1A_list,
+#                         Opos2A_list,
+#                         dict_AspectSentiment,
+#                         restricted_version=True,
+#                     )
+#                     all_blocks_neg[str(item)]["Oneg1A_Opos2A_restricted"] = blocks_Oneg1A_Opos2A_restricted
+#                     print("blocks_Oneg1A_Opos2A_restricted is DONE!")
+
+#                     blocks_Oneg1A_Opos2A_unrestricted = Oneg1A_Opos2A(
+#                         item,
+#                         wrong_aspects,
+#                         correct_forms,
+#                         Oneg1A_list,
+#                         Opos2A_list,
+#                         dict_AspectSentiment,
+#                         restricted_version=False,
+#                     )
+#                     all_blocks_neg[str(item)]["Oneg1A_Opos2A_unrestricted"] = blocks_Oneg1A_Opos2A_unrestricted
+#                     print("blocks_Oneg1A_Opos2A_unrestricted is DONE!")
+
+#                     with open('./100_blocks_neg.jsonl', 'a') as f:
+#                         json.dump(all_blocks_neg, f)
+#                         f.write('\n')
+
+#                     with open('./done_items_neg.pkl', 'wb') as fp:
+#                         pickle.dump(done_items_neg, fp, protocol=4)
+
+#                     # Clear memory and force garbage collection after each item
+#                     all_blocks_neg.clear()
+#                     gc.collect()
+
+# print("Final progress saved!")
