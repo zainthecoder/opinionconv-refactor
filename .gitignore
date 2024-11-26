@@ -9,9 +9,7 @@ myenv/*
 .DS*
 sftp*
 myenv/
-*.pkl
 corpora/
-*.csv
 check*
 tokeniz*
 .gitatt*

@@ -3,7 +3,6 @@ import json
 import pickle
 import re
 import random
-import ipdb
 import numpy as np
 
 metaData_for_cellPhones = pd.read_pickle(
