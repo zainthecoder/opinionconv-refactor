@@ -9,10 +9,9 @@ import copy
 import pprint
 
 import pprint
-import datasets
+
 import os
 
-datasets.logging.set_verbosity_error()
 
 from datasets import load_dataset
 

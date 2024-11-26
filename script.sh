@@ -5,12 +5,8 @@
 #SBATCH --ntasks=1
 #SBATCH --output=/home/s28zabed/opinionconv-refactor/output.out
 
-# Initialize Conda for the shell (necessary if not already done)
-source ~/.bashrc
-
-
 # Activate the environment
-conda activate myenv
+source myenv/bin/activate
 
 # Run your script
 python MAIN.py
