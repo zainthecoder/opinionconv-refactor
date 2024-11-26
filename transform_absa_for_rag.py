@@ -4,8 +4,6 @@ import json
 from nanoid import generate
 
 
-data = pd.read_pickle(r'Cellphone_sentiment_aspect_dict_100.pkl')
-
 
 with open('final_reviews_after_absa.json', 'r') as f:
     orignal_data = json.load(f)
