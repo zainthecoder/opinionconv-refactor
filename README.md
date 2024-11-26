@@ -159,3 +159,5 @@ conda create --name hpc_env python=3.9
 conda activate myenv
 
 source ~/.bashrc 
+
+srun --cpus-per-task=20 --partition=A100short --gres=gpu:1 --pty bash
