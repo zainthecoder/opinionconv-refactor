@@ -11,7 +11,7 @@ metaData_for_cellPhones = pd.read_pickle(
 wrong_aspects_3 = pd.read_pickle("./wrong_aspects_3.pkl")
 
 # Path to the input JSON file
-input_file = "transformed_data.json"
+input_file = "transformed_data_for_100_blocks.json"
 
 # Read the JSON file
 with open(input_file, "r") as f:
